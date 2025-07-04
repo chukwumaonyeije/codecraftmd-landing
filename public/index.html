@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login - CodeCraftMD</title>
+  <!-- TailwindCSS + Firebase SDKs -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+  <div class="bg-white shadow-md rounded-lg p-8 max-w-md w-full text-center">
+    <h1 class="text-2xl font-bold mb-4 text-gray-800">Login to CodeCraftMD</h1>
+
+    <!-- Google Sign-In -->
+    <button id="google-login" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mb-4 w-full">
+      Sign in with Google
+    </button>
+
+    <!-- Email/Password Login -->
+    <div class="mt-4 space-y-2">
+      <input type="email" id="email" placeholder="Email"
+        class="w-full px-3 py-2 border rounded-md border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-300" />
+      <input type="password" id="password" placeholder="Password"
+        class="w-full px-3 py-2 border rounded-md border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-300" />
+      <button id="email-login"
+        class="w-full bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Login</button>
+    </div>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDxAdkFfUtpZzgZkEwN0389fh7Bak3oe4E",
+      authDomain: "codecraftmd-e48b0.firebaseapp.com",
+      projectId: "codecraftmd-e48b0",
+      storageBucket: "codecraftmd-e48b0.appspot.com",
+      messagingSenderId: "410377358686",
+      appId: "1:410377358686:web:ba8f33b03827281e5993cf"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        window.location.href = "/dashboard";
+      }
+    });
+
+    document.getElementById('google-login').addEventListener('click', () => {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      auth.signInWithPopup(provider)
+        .then(() => window.location.href = "/dashboard")
+        .catch(err => alert(err.message));
+    });
+
+    document.getElementById('email-login').addEventListener('click', () => {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      auth.signInWithEmailAndPassword(email, password)
+        .then(() => window.location.href = "/dashboard")
+        .catch(err => alert(err.message));
+    });
+  </script>
+</body>
+</html>

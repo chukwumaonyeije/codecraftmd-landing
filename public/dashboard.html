@@ -1,0 +1,49 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+  <title>Protected Dashboard</title>
+  <!-- TailwindCSS + Firebase SDKs -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+  <div class="bg-white shadow-md rounded-lg p-8 max-w-xl w-full text-center">
+    <h1 class="text-3xl font-bold mb-4 text-gray-800">Welcome to the Protected Dashboard</h1>
+    <p id="user-info" class="text-gray-600 mb-6">Checking login status...</p>
+    <button id="logout-btn" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 hidden">
+      Sign Out
+    </button>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDxAdkFfUtpZzgZkEwN0389fh7Bak3oe4E",
+      authDomain: "codecraftmd-e48b0.firebaseapp.com",
+      projectId: "codecraftmd-e48b0",
+      storageBucket: "codecraftmd-e48b0.appspot.com",
+      messagingSenderId: "410377358686",
+      appId: "1:410377358686:web:ba8f33b03827281e5993cf"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    auth.onAuthStateChanged((user) => {
+      console.log("Auth state changed:", user);
+      if (!user) {
+        window.location.href = "/";
+      } else {
+        document.getElementById("user-info").innerText = "Signed in as: " + user.email;
+        document.getElementById("logout-btn").classList.remove("hidden");
+      }
+    });
+
+    document.getElementById("logout-btn").addEventListener("click", () => {
+      auth.signOut().then(() => {
+        window.location.href = "/";
+      });
+    });
+  </script>
+</body>
+</html>
