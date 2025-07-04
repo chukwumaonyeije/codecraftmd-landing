@@ -5,6 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CodeCraftMD | AI-Powered Medical Billing Automation</title>
   <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+
+  <!-- Firebase Configuration -->
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDxAdkFfUtpZzgZkEwN0389fh7Bak3oe4E",
+      authDomain: "codecraftmd-e48b0.firebaseapp.com",
+      projectId: "codecraftmd-e48b0",
+      storageBucket: "codecraftmd-e48b0.appspot.com", // ✅ fixed typo
+      messagingSenderId: "410377358686",
+      appId: "1:410377358686:web:ba8f33b03827281e5993cf"
+    };
+    firebase.initializeApp(firebaseConfig);
+  </script>
 </head>
 <body class="bg-gray-50 text-gray-800">
 
@@ -36,6 +53,21 @@
     </div>
   </section>
 
+  <!-- Login Section -->
+  <section class="py-12">
+    <div class="max-w-md mx-auto bg-white p-6 rounded-lg shadow">
+      <h2 class="text-xl font-semibold mb-4">Login or Sign Up</h2>
+      <input id="email" type="email" placeholder="Email" class="w-full mb-3 p-2 border rounded" />
+      <input id="password" type="password" placeholder="Password" class="w-full mb-4 p-2 border rounded" />
+      <button onclick="signUp()" class="w-full bg-blue-700 text-white py-2 rounded hover:bg-blue-800 mb-2">Sign Up</button>
+      <button onclick="signIn()" class="w-full bg-gray-700 text-white py-2 rounded hover:bg-gray-800 mb-4">Login</button>
+      <button onclick="signInWithGoogle()" class="w-full bg-red-600 text-white py-2 rounded hover:bg-red-700">
+        Sign in with Google
+      </button>
+      <p id="auth-status" class="text-center text-sm text-gray-600 mt-4"></p>
+    </div>
+  </section>
+
   <!-- Features Section -->
   <section id="features" class="py-20 bg-white">
     <div class="max-w-6xl mx-auto px-6 text-center">
@@ -43,21 +75,21 @@
       <div class="grid md:grid-cols-3 gap-10">
         <div>
           <h4 class="text-xl font-semibold mb-2">ICD-10 Extraction</h4>
-          <p class="text-sm text-gray-600">Upload or paste consult notes. CodeCraftMD extracts the diagnoses using advanced medical NLP.</p>
+          <p class="text-sm text-gray-600">Upload or paste consult notes. CodeCraftMD extracts diagnoses using medical NLP.</p>
         </div>
         <div>
           <h4 class="text-xl font-semibold mb-2">Editable Review Panel</h4>
-          <p class="text-sm text-gray-600">Easily review, refine, or override codes before final submission.</p>
+          <p class="text-sm text-gray-600">Easily review, refine, or override codes before submission.</p>
         </div>
         <div>
           <h4 class="text-xl font-semibold mb-2">Billing Summary Generation</h4>
-          <p class="text-sm text-gray-600">Create CMS-1500-style billing forms for print, email, or export.</p>
+          <p class="text-sm text-gray-600">Create CMS-1500-style billing forms for print or export.</p>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- How it Works -->
+  <!-- How It Works -->
   <section id="how-it-works" class="py-20 bg-gray-50">
     <div class="max-w-6xl mx-auto px-6">
       <h3 class="text-3xl font-bold text-blue-900 text-center mb-12">How It Works</h3>
@@ -85,5 +117,59 @@
     <p>Email: <a href="mailto:info@codecraftmd.com" class="text-blue-600">info@codecraftmd.com</a></p>
   </footer>
 
+  <!-- Firebase Auth Logic -->
+  <script>
+    const auth = firebase.auth();
+    const provider = new firebase.auth.GoogleAuthProvider();
+
+    function signUp() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      auth.createUserWithEmailAndPassword(email, password)
+        .then(userCredential => {
+          document.getElementById("auth-status").innerText = "Sign-up successful!";
+          window.location.href = "/dashboard.html"; // Redirect
+        })
+        .catch(error => {
+          console.error("Sign-up error:", error.code, error.message);
+          document.getElementById("auth-status").innerText = error.message;
+        });
+    }
+
+    function signIn() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      auth.signInWithEmailAndPassword(email, password)
+        .then(userCredential => {
+          document.getElementById("auth-status").innerText = "Login successful!";
+          window.location.href = "/dashboard.html"; // Redirect
+        })
+        .catch(error => {
+          console.error("Login error:", error.code, error.message);
+          document.getElementById("auth-status").innerText = error.message;
+        });
+    }
+
+    function signInWithGoogle() {
+      auth.signInWithPopup(provider)
+        .then(result => {
+          const user = result.user;
+          document.getElementById("auth-status").innerText = `Welcome, ${user.displayName}`;
+          window.location.href = "/dashboard.html"; // Redirect
+        })
+        .catch(error => {
+          console.error("Google Sign-In error:", error.code, error.message);
+          document.getElementById("auth-status").innerText = error.message;
+        });
+    }
+
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        console.log("Authenticated as:", user.displayName || user.email);
+      } else {
+        console.log("User not logged in.");
+      }
+    });
+  </script>
 </body>
 </html>

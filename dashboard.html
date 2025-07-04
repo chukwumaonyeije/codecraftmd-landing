@@ -1,0 +1,155 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Consult Dashboard</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-gray-100 font-sans">
+  <!-- 🔐 Auth-protected section -->
+  <div class="max-w-6xl mx-auto p-4">
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold text-gray-800">🩺 Consult Dashboard</h1>
+      <div>
+        <span id="user-email" class="text-sm text-gray-600 mr-4"></span>
+        <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">
+          Sign Out
+        </button>
+      </div>
+    </div>
+
+    <!-- 📥 Consult Note Input -->
+    <section class="mb-6">
+      <h2 class="text-xl font-semibold text-gray-700 mb-2">Consult Note Input</h2>
+      <textarea id="consultNote" class="w-full h-40 p-3 border border-gray-300 rounded" placeholder="Paste consultation note here..."></textarea>
+      <input type="file" id="fileUpload" accept=".txt,.docx,.pdf" class="mt-3" />
+    </section>
+
+    <!-- 🤖 ICD-10 Extraction -->
+    <section class="mb-6">
+      <h2 class="text-xl font-semibold text-gray-700 mb-2">ICD-10 Code Extraction</h2>
+      <button id="extractBtn" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
+        Extract ICD-10 Codes
+      </button>
+      <div id="icdResults" class="mt-4 bg-white p-3 rounded shadow">
+        <!-- ICD-10 table will be inserted here -->
+      </div>
+    </section>
+
+    <!-- 🧾 Billing Summary Generator -->
+    <section class="mb-6">
+      <h2 class="text-xl font-semibold text-gray-700 mb-2">Billing Summary</h2>
+      <button id="generateBillingBtn" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded mb-3">
+        Generate Billing Summary
+      </button>
+      <div id="billingForm" class="bg-white p-4 rounded shadow">
+        <label class="block mb-2">Patient Name: <input type="text" id="patientName" class="border rounded p-1 w-full"/></label>
+        <label class="block mb-2">DOB: <input type="date" id="dob" class="border rounded p-1 w-full"/></label>
+        <label class="block mb-2">Provider: <input type="text" id="providerName" class="border rounded p-1 w-full"/></label>
+        <label class="block mb-2">Diagnosis Codes:
+          <textarea id="diagnosisCodes" class="border rounded p-1 w-full h-20"></textarea>
+        </label>
+        <button id="downloadPDF" class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded mt-2">
+          Download PDF
+        </button>
+      </div>
+    </section>
+  </div>
+<!-- 🔐 Firebase Auth & Logic -->
+<script>
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_AUTH_DOMAIN",
+    projectId: "YOUR_PROJECT_ID",
+    appId: "YOUR_APP_ID"
+  };
+  firebase.initializeApp(firebaseConfig);
+
+  firebase.auth().onAuthStateChanged((user) => {
+    if (user) {
+      document.getElementById("user-email").textContent = user.email;
+    } else {
+      window.location.href = "/";
+    }
+  });
+
+  document.getElementById("logoutBtn").addEventListener("click", () => {
+    firebase.auth().signOut().then(() => {
+      window.location.href = "/";
+    });
+  });
+</script>
+
+<!-- 📦 PDF Make -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+
+<!-- 🤖 ICD-10 Code Extraction -->
+<script>
+  document.getElementById("extractBtn").addEventListener("click", () => {
+    const noteText = document.getElementById("consultNote").value;
+    const icdPattern = /[A-TV-Z][0-9][0-9AB](\.[0-9A-TV-Z]{1,4})?/g;
+    const matches = [...new Set(noteText.match(icdPattern) || [])];
+
+    const resultContainer = document.getElementById("icdResults");
+    if (matches.length === 0) {
+      resultContainer.innerHTML = "<p class='text-red-500'>No ICD-10 codes found.</p>";
+      return;
+    }
+
+    let tableHTML = `
+      <table class="table-auto w-full text-left border mt-2">
+        <thead>
+          <tr>
+            <th class="border px-2 py-1 bg-gray-200">Code</th>
+            <th class="border px-2 py-1 bg-gray-200">Description</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+    matches.forEach(code => {
+      tableHTML += `
+        <tr>
+          <td class="border px-2 py-1">${code}</td>
+          <td class="border px-2 py-1">[Description via GPT/API]</td>
+        </tr>
+      `;
+    });
+    tableHTML += `</tbody></table>`;
+    resultContainer.innerHTML = tableHTML;
+
+    document.getElementById("diagnosisCodes").value = matches.join(", ");
+  });
+</script>
+
+<!-- 🧾 PDF Billing Summary -->
+<script>
+  document.getElementById("downloadPDF").addEventListener("click", () => {
+    const name = document.getElementById("patientName").value || "N/A";
+    const dob = document.getElementById("dob").value || "N/A";
+    const provider = document.getElementById("providerName").value || "N/A";
+    const dxCodes = document.getElementById("diagnosisCodes").value || "N/A";
+
+    const docDefinition = {
+      content: [
+        { text: '🧾 Billing Summary', style: 'header' },
+        { text: `Patient Name: ${name}`, margin: [0, 10, 0, 0] },
+        { text: `Date of Birth: ${dob}` },
+        { text: `Provider: ${provider}` },
+        { text: `Diagnosis Codes: ${dxCodes}` }
+      ],
+      styles: {
+        header: {
+          fontSize: 20,
+          bold: true
+        }
+      }
+    };
+
+    pdfMake.createPdf(docDefinition).download(`Billing_Summary_${name}.pdf`);
+  });
+</script>
