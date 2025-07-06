@@ -1,0 +1,26 @@
+﻿name: 🚀 Deploy to Firebase Hosting on push
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: 🔧 Build and Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: ⬢ Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: 🔥 Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: 🚀 Deploy to Firebase
+        run: firebase deploy --token ${{ secrets.FIREBASE_TOKEN }}
