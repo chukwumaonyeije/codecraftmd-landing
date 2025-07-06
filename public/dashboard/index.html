@@ -1,49 +1,53 @@
 ﻿<!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Protected Dashboard</title>
-  <!-- TailwindCSS + Firebase SDKs -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CodeCraftMD | AI-Powered Medical Billing</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <link rel="icon" href="/favicon.ico" />
 </head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center">
-  <div class="bg-white shadow-md rounded-lg p-8 max-w-xl w-full text-center">
-    <h1 class="text-3xl font-bold mb-4 text-gray-800">Welcome to the Protected Dashboard</h1>
-    <p id="user-info" class="text-gray-600 mb-6">Checking login status...</p>
-    <button id="logout-btn" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 hidden">
-      Sign Out
-    </button>
-  </div>
+<body class="bg-gradient-to-br from-gray-900 via-blue-900 to-gray-800 text-white min-h-screen flex flex-col">
+  <!-- Header -->
+  <header class="p-6 flex justify-between items-center">
+    <h1 class="text-2xl font-bold tracking-wide">CodeCraft<span class="text-blue-400">MD</span></h1>
+    <div>
+      <a href="/login.html" class="text-sm text-white hover:text-blue-400 mr-4">Sign In</a>
+      <a href="/signup.html" class="bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded-lg text-sm">Create Account</a>
+    </div>
+  </header>
 
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyDxAdkFfUtpZzgZkEwN0389fh7Bak3oe4E",
-      authDomain: "codecraftmd-e48b0.firebaseapp.com",
-      projectId: "codecraftmd-e48b0",
-      storageBucket: "codecraftmd-e48b0.appspot.com",
-      messagingSenderId: "410377358686",
-      appId: "1:410377358686:web:ba8f33b03827281e5993cf"
-    };
+  <!-- Hero -->
+  <section class="flex-1 flex flex-col items-center justify-center text-center px-4">
+    <h2 class="text-4xl sm:text-5xl font-bold mb-6">AI-Powered Billing Automation for Specialists</h2>
+    <p class="text-lg text-gray-300 max-w-xl mb-8">
+      Extract ICD-10 codes and generate professional billing summaries directly from consult notes — fast, accurate, and secure.
+    </p>
+    <a href="/signup.html" class="bg-blue-500 hover:bg-blue-600 px-6 py-3 rounded-lg font-semibold text-white">Get Started</a>
+  </section>
 
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
+  <!-- Features -->
+  <section class="bg-gray-950 py-12 px-6 text-center">
+    <h3 class="text-2xl font-bold mb-8">How It Works</h3>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+      <div>
+        <h4 class="text-xl font-semibold mb-2">📝 Upload Consult Note</h4>
+        <p class="text-gray-400">Paste or upload your clinical note in seconds.</p>
+      </div>
+      <div>
+        <h4 class="text-xl font-semibold mb-2">🧠 Extract ICD-10 Codes</h4>
+        <p class="text-gray-400">Let our AI handle the code extraction accurately.</p>
+      </div>
+      <div>
+        <h4 class="text-xl font-semibold mb-2">📄 Generate Billing Summary</h4>
+        <p class="text-gray-400">Download a PDF-ready billing summary with diagnosis codes.</p>
+      </div>
+    </div>
+  </section>
 
-    auth.onAuthStateChanged((user) => {
-      console.log("Auth state changed:", user);
-      if (!user) {
-        window.location.href = "/";
-      } else {
-        document.getElementById("user-info").innerText = "Signed in as: " + user.email;
-        document.getElementById("logout-btn").classList.remove("hidden");
-      }
-    });
-
-    document.getElementById("logout-btn").addEventListener("click", () => {
-      auth.signOut().then(() => {
-        window.location.href = "/";
-      });
-    });
-  </script>
+  <!-- Footer -->
+  <footer class="p-6 text-center text-sm text-gray-500">
+    © 2025 CodeCraftMD. Built for specialists, by specialists.
+  </footer>
 </body>
 </html>
