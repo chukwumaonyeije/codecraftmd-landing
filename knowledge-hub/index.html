@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Knowledge Hub | CodeCraftMD - Medical Billing Insights & Guides</title>
+  <meta name="description" content="Expert insights on medical billing, ICD-10 coding, CPT codes, and AI-powered healthcare solutions from CodeCraftMD.">
+  <meta name="keywords" content="medical billing, ICD-10, CPT codes, healthcare AI, billing automation, medical coding">
+  <meta name="theme-color" content="#1D4ED8">
+  <meta name="color-scheme" content="light">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192x192.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://codecraftmd.com/knowledge-hub/">
+  <meta property="og:title" content="Medical Billing Knowledge Hub | CodeCraftMD">
+  <meta property="og:description" content="Expert insights on medical billing, ICD-10 coding, and healthcare AI automation.">
+  <meta property="og:image" content="https://codecraftmd.com/images/knowledge-hub-preview.png">
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="https://codecraftmd.com/knowledge-hub/">
+  <meta property="twitter:title" content="Medical Billing Knowledge Hub | CodeCraftMD">
+  <meta property="twitter:description" content="Expert insights on medical billing, ICD-10 coding, and healthcare AI automation.">
+  <meta property="twitter:image" content="https://codecraftmd.com/images/knowledge-hub-preview.png">
+
+  <style>
+    .knowledge-hub-gradient {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .article-card {
+      transition: all 0.3s ease;
+    }
+    
+    .article-card:hover {
+      transform: translateY(-4px);
+    }
+    
+    .category-badge {
+      transition: all 0.2s ease;
+    }
+    
+    .category-badge:hover {
+      transform: scale(1.05);
+    }
+    
+    .search-highlight {
+      background-color: #fef08a;
+      font-weight: 600;
+    }
+
+    /* Custom scrollbar for sidebar */
+    .sidebar-scroll::-webkit-scrollbar {
+      width: 4px;
+    }
+    
+    .sidebar-scroll::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    
+    .sidebar-scroll::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 2px;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+  <!-- Navbar -->
+  <header class="bg-white shadow-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+      <!-- CodeCraftMD Logo -->
+      <div class="flex items-center">
+        <a href="/" class="flex items-center">
+          <svg class="w-10 h-10 mr-3" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Medical Cross Background -->
+            <rect width="32" height="32" rx="6" fill="#1D4ED8"/>
+            <!-- Cross -->
+            <rect x="14" y="6" width="4" height="20" fill="white" rx="1"/>
+            <rect x="6" y="14" width="20" height="4" fill="white" rx="1"/>
+            <!-- Code Brackets -->
+            <path d="M10 10L8 12L10 14" stroke="#60A5FA" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M22 10L24 12L22 14" stroke="#60A5FA" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <div>
+            <h1 class="text-2xl font-bold text-blue-700" style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; letter-spacing: -0.5px;">CodeCraftMD</h1>
+            <p class="text-xs text-gray-500 -mt-1" style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">Knowledge Hub</p>
+          </div>
+        </a>
+      </div>
+      
+      <!-- Navigation -->
+      <nav class="flex items-center space-x-6">
+        <a href="/" class="text-sm font-medium text-gray-600 hover:text-blue-600 transition">← Back to Home</a>
+        <a href="/dashboard.html" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm font-medium transition">Try Platform</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Breadcrumb -->
+  <nav class="bg-white border-b">
+    <div class="max-w-7xl mx-auto px-4 py-2">
+      <ol class="flex items-center space-x-2 text-sm text-gray-500">
+        <li><a href="/" class="hover:text-blue-600">Home</a></li>
+        <li><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg></li>
+        <li class="text-gray-900 font-medium">Knowledge Hub</li>
+      </ol>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="knowledge-hub-gradient text-white py-16">
+    <div class="max-w-6xl mx-auto px-6 text-center">
+      <div class="max-w-4xl mx-auto">
+        <h1 class="text-4xl md:text-5xl font-bold mb-6">
+          Medical Billing Knowledge Hub
+        </h1>
+        <p class="text-xl md:text-2xl text-blue-100 mb-8 leading-relaxed">
+          Expert insights, best practices, and cutting-edge strategies for modern medical billing and coding
+        </p>
+        
+        <!-- Search Bar -->
+        <div class="max-w-md mx-auto">
+          <div class="relative">
+            <input 
+              type="text" 
+              id="searchInput"
+              placeholder="Search articles, topics, codes..."
+              class="w-full px-4 py-3 pl-12 rounded-xl border-0 text-gray-800 shadow-lg focus:ring-4 focus:ring-blue-300 focus:outline-none"
+            />
+            <svg class="w-5 h-5 text-gray-400 absolute left-4 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto px-6 py-12">
+    <div class="grid lg:grid-cols-4 gap-8">
+      
+      <!-- Sidebar -->
+      <aside class="lg:col-span-1">
+        <div class="bg-white rounded-xl shadow-sm border p-6 sticky top-28 sidebar-scroll" style="max-height: calc(100vh - 8rem); overflow-y: auto;">
+          
+          <!-- Categories -->
+          <div class="mb-8">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Categories</h3>
+            <div class="space-y-2">
+              <button class="category-filter category-badge block w-full text-left px-3 py-2 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 text-sm font-medium transition" data-category="all">
+                📚 All Articles <span class="float-right text-xs bg-blue-200 px-2 py-1 rounded-full">12</span>
+              </button>
+              <button class="category-filter category-badge block w-full text-left px-3 py-2 rounded-lg text-gray-600 hover:bg-gray-50 text-sm transition" data-category="icd-10">
+                🏥 ICD-10 Coding <span class="float-right text-xs bg-gray-200 px-2 py-1 rounded-full">4</span>
+              </button>
+              <button class="category-filter category-badge block w-full text-left px-3 py-2 rounded-lg text-gray-600 hover:bg-gray-50 text-sm transition" data-category="cpt-codes">
+                💊 CPT Codes <span class="float-right text-xs bg-gray-200 px-2 py-1 rounded-full">3</span>
+              </button>
+              <button class="category-filter category-badge block w-full text-left px-3 py-2 rounded-lg text-gray-600 hover:bg-gray-50 text-sm transition" data-category="ai-automation">
+                🤖 AI & Automation <span class="float-right text-xs bg-gray-200 px-2 py-1 rounded-full">3</span>
+              </button>
+              <button class="category-filter category-badge block w-full text-left px-3 py-2 rounded-lg text-gray-600 hover:bg-gray-50 text-sm transition" data-category="best-practices">
+                ⚡ Best Practices <span class="float-right text-xs bg-gray-200 px-2 py-1 rounded-full">2</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Popular Tags -->
+          <div class="mb-8">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Popular Tags</h3>
+            <div class="flex flex-wrap gap-2">
+              <span class="tag-filter px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs hover:bg-blue-100 hover:text-blue-700 cursor-pointer transition" data-tag="medical-coding">medical-coding</span>
+              <span class="tag-filter px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs hover:bg-blue-100 hover:text-blue-700 cursor-pointer transition" data-tag="billing-automation">billing-automation</span>
+              <span class="tag-filter px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs hover:bg-blue-100 hover:text-blue-700 cursor-pointer transition" data-tag="healthcare-ai">healthcare-ai</span>
+              <span class="tag-filter px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs hover:bg-blue-100 hover:text-blue-700 cursor-pointer transition" data-tag="revenue-optimization">revenue-optimization</span>
+            </div>
+          </div>
+
+          <!-- Newsletter Signup -->
+          <div class="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-lg">
+            <h4 class="font-semibold text-gray-900 mb-2">Stay Updated</h4>
+            <p class="text-sm text-gray-600 mb-3">Get the latest insights delivered to your inbox.</p>
+            <input type="email" placeholder="Your email" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg mb-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            <button class="w-full bg-blue-600 text-white text-sm font-medium py-2 rounded-lg hover:bg-blue-700 transition">Subscribe</button>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Articles Grid -->
+      <div class="lg:col-span-3">
+        <!-- Featured Article -->
+        <div class="mb-12">
+          <div class="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-8 text-white">
+            <span class="inline-block bg-white bg-opacity-20 text-white px-3 py-1 rounded-full text-sm font-medium mb-4">Featured Article</span>
+            <h2 class="text-3xl font-bold mb-4">The Future of Medical Billing: How AI is Transforming Healthcare Revenue Cycles</h2>
+            <p class="text-blue-100 mb-6 text-lg leading-relaxed">Discover how artificial intelligence is revolutionizing medical billing, reducing errors by 85%, and helping practices increase revenue while reducing administrative burden.</p>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-2">
+                <img src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=40&h=40&fit=crop&crop=face&auto=format" alt="Dr. Chukwuma Onyeije" class="w-8 h-8 rounded-full">
+                <div class="text-sm">
+                  <p class="font-medium">Dr. Chukwuma Onyeije</p>
+                  <p class="text-blue-200">Oct 17, 2024 • 8 min read</p>
+                </div>
+              </div>
+              <a href="articles/ai-future-medical-billing.html" class="bg-white text-blue-600 px-6 py-2 rounded-lg font-medium hover:bg-blue-50 transition">Read Article →</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Articles Grid -->
+        <div id="articlesGrid">
+          <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+            
+            <!-- Article 1: ICD-10 -->
+            <article class="article-card bg-white rounded-xl shadow-sm border hover:shadow-lg" data-category="icd-10" data-tags="medical-coding,icd-10,diagnosis">
+              <div class="p-6">
+                <div class="flex items-center justify-between mb-3">
+                  <span class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">ICD-10 Coding</span>
+                  <span class="text-xs text-gray-500">5 min read</span>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-3 line-clamp-2">Complete Guide to ICD-10 Coding Best Practices for 2024</h3>
+                <p class="text-gray-600 text-sm mb-4 line-clamp-3">Master the latest ICD-10 coding guidelines, avoid common pitfalls, and ensure maximum reimbursement with these expert strategies.</p>
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center space-x-2">
+                    <div class="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
+                      <span class="text-blue-600 text-xs font-bold">CO</span>
+                    </div>
+                    <span class="text-xs text-gray-500">Oct 15, 2024</span>
+                  </div>
+                  <a href="articles/icd-10-coding-best-practices.html" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Read More →</a>
+                </div>
+              </div>
+            </article>
+
+            <!-- Article 2: CPT Codes -->
+            <article class="article-card bg-white rounded-xl shadow-sm border hover:shadow-lg" data-category="cpt-codes" data-tags="cpt-codes,procedure-coding,billing">
+              <div class="p-6">
+                <div class="flex items-center justify-between mb-3">
+                  <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">CPT Codes</span>
+                  <span class="text-xs text-gray-500">7 min read</span>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-3 line-clamp-2">Understanding CPT Code Changes: What's New in 2024</h3>
+                <p class="text-gray-600 text-sm mb-4 line-clamp-3">Stay current with the latest CPT code updates, deletions, and revisions that impact your billing accuracy and compliance.</p>
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center space-x-2">
+                    <div class="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
+                      <span class="text-blue-600 text-xs font-bold">CO</span>
+                    </div>
+                    <span class="text-xs text-gray-500">Oct 12, 2024</span>
+                  </div>
+                  <a href="articles/cpt-code-changes-2024.html" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Read More →</a>
+                </div>
+              </div>
+            </article>
+
+            <!-- Article 3: AI Automation -->
+            <article class="article-card bg-white rounded-xl shadow-sm border hover:shadow-lg" data-category="ai-automation" data-tags="healthcare-ai,billing-automation,efficiency">
+              <div class="p-6">
+                <div class="flex items-center justify-between mb-3">
+                  <span class="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">AI & Automation</span>
+                  <span class="text-xs text-gray-500">6 min read</span>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-3 line-clamp-2">5 Ways AI Can Reduce Your Billing Errors by 90%</h3>
+                <p class="text-gray-600 text-sm mb-4 line-clamp-3">Discover how artificial intelligence can dramatically improve billing accuracy, reduce denials, and streamline your revenue cycle.</p>
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center space-x-2">
+                    <div class="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
+                      <span class="text-blue-600 text-xs font-bold">CO</span>
+                    </div>
+                    <span class="text-xs text-gray-500">Oct 10, 2024</span>
+                  </div>
+                  <a href="articles/ai-reduce-billing-errors.html" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Read More →</a>
+                </div>
+              </div>
+            </article>
+
+            <!-- Article 4: Best Practices -->
+            <article class="article-card bg-white rounded-xl shadow-sm border hover:shadow-lg" data-category="best-practices" data-tags="revenue-optimization,billing-efficiency,healthcare-management">
+              <div class="p-6">
+                <div class="flex items-center justify-between mb-3">
+                  <span class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-medium">Best Practices</span>
+                  <span class="text-xs text-gray-500">4 min read</span>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-3 line-clamp-2">10 Medical Billing KPIs Every Practice Should Track</h3>
+                <p class="text-gray-600 text-sm mb-4 line-clamp-3">Monitor these essential metrics to optimize your revenue cycle, identify bottlenecks, and improve overall billing performance.</p>
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center space-x-2">
+                    <div class="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
+                      <span class="text-blue-600 text-xs font-bold">CO</span>
+                    </div>
+                    <span class="text-xs text-gray-500">Oct 8, 2024</span>
+                  </div>
+                  <a href="articles/medical-billing-kpis.html" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Read More →</a>
+                </div>
+              </div>
+            </article>
+
+            <!-- Article 5: ICD-10 -->
+            <article class="article-card bg-white rounded-xl shadow-sm border hover:shadow-lg" data-category="icd-10" data-tags="medical-coding,diagnosis,documentation">
+              <div class="p-6">
+                <div class="flex items-center justify-between mb-3">
+                  <span class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">ICD-10 Coding</span>
+                  <span class="text-xs text-gray-500">8 min read</span>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-3 line-clamp-2">Common ICD-10 Coding Mistakes That Cost Practices Thousands</h3>
+                <p class="text-gray-600 text-sm mb-4 line-clamp-3">Avoid these frequent coding errors that lead to claim denials, audits, and lost revenue in your medical practice.</p>
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center space-x-2">
+                    <div class="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
+                      <span class="text-blue-600 text-xs font-bold">CO</span>
+                    </div>
+                    <span class="text-xs text-gray-500">Oct 5, 2024</span>
+                  </div>
+                  <a href="articles/icd-10-coding-mistakes.html" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Read More →</a>
+                </div>
+              </div>
+            </article>
+
+            <!-- Article 6: AI Automation -->
+            <article class="article-card bg-white rounded-xl shadow-sm border hover:shadow-lg" data-category="ai-automation" data-tags="healthcare-ai,nlp,automation">
+              <div class="p-6">
+                <div class="flex items-center justify-between mb-3">
+                  <span class="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">AI & Automation</span>
+                  <span class="text-xs text-gray-500">9 min read</span>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-3 line-clamp-2">Natural Language Processing in Medical Billing: A Complete Guide</h3>
+                <p class="text-gray-600 text-sm mb-4 line-clamp-3">Learn how NLP technology extracts billing codes from clinical notes, improving accuracy and reducing manual coding time.</p>
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center space-x-2">
+                    <div class="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
+                      <span class="text-blue-600 text-xs font-bold">CO</span>
+                    </div>
+                    <span class="text-xs text-gray-500">Oct 3, 2024</span>
+                  </div>
+                  <a href="articles/nlp-medical-billing-guide.html" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Read More →</a>
+                </div>
+              </div>
+            </article>
+
+          </div>
+
+          <!-- Load More Button -->
+          <div class="text-center mt-12">
+            <button class="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition font-medium">
+              Load More Articles
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- CTA Section -->
+  <section class="bg-gradient-to-r from-blue-600 to-purple-600 py-16">
+    <div class="max-w-4xl mx-auto px-6 text-center text-white">
+      <h2 class="text-3xl font-bold mb-4">Ready to Transform Your Billing Process?</h2>
+      <p class="text-xl text-blue-100 mb-8">Join thousands of healthcare professionals using CodeCraftMD to streamline their billing workflow.</p>
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <a href="/dashboard.html" class="bg-white text-blue-600 px-8 py-4 rounded-xl font-semibold hover:bg-blue-50 transition shadow-lg">
+          Try Platform Free →
+        </a>
+        <a href="/" class="border-2 border-white text-white px-8 py-4 rounded-xl font-semibold hover:bg-white hover:text-blue-600 transition">
+          Learn More
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-gray-900 text-white py-12">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="grid md:grid-cols-4 gap-8">
+        <div>
+          <div class="flex items-center mb-4">
+            <svg class="w-8 h-8 mr-2" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="32" height="32" rx="6" fill="#1D4ED8"/>
+              <rect x="14" y="6" width="4" height="20" fill="white" rx="1"/>
+              <rect x="6" y="14" width="20" height="4" fill="white" rx="1"/>
+              <path d="M10 10L8 12L10 14" stroke="#60A5FA" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M22 10L24 12L22 14" stroke="#60A5FA" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <h3 class="text-lg font-bold">CodeCraftMD</h3>
+          </div>
+          <p class="text-gray-400 text-sm">AI-powered medical billing automation for modern healthcare practices.</p>
+        </div>
+        
+        <div>
+          <h4 class="text-sm font-semibold mb-4">Knowledge Hub</h4>
+          <ul class="space-y-2 text-sm text-gray-400">
+            <li><a href="#" class="hover:text-white">ICD-10 Guides</a></li>
+            <li><a href="#" class="hover:text-white">CPT Code Updates</a></li>
+            <li><a href="#" class="hover:text-white">AI & Automation</a></li>
+            <li><a href="#" class="hover:text-white">Best Practices</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h4 class="text-sm font-semibold mb-4">Platform</h4>
+          <ul class="space-y-2 text-sm text-gray-400">
+            <li><a href="/dashboard.html" class="hover:text-white">Try Platform</a></li>
+            <li><a href="/" class="hover:text-white">Features</a></li>
+            <li><a href="/#pricing" class="hover:text-white">Pricing</a></li>
+            <li><a href="/#contact" class="hover:text-white">Contact</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h4 class="text-sm font-semibold mb-4">Connect</h4>
+          <div class="flex space-x-3">
+            <a href="https://www.linkedin.com/in/chukwumaonyeije/" class="text-gray-400 hover:text-white">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+              </svg>
+            </a>
+            <a href="https://x.com/CodeCraftMD" class="text-gray-400 hover:text-white">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+              </svg>
+            </a>
+            <a href="https://github.com/chukwumaonyeije" class="text-gray-400 hover:text-white">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+      
+      <div class="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-400">
+        <p>© 2024 CodeCraftMD. All rights reserved. | Created by Dr. Chukwuma Onyeije</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- JavaScript for Search and Filtering -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const searchInput = document.getElementById('searchInput');
+      const articles = document.querySelectorAll('.article-card');
+      const categoryButtons = document.querySelectorAll('.category-filter');
+      const tagButtons = document.querySelectorAll('.tag-filter');
+      
+      let currentCategory = 'all';
+      let currentTag = null;
+      
+      // Search functionality
+      searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        filterArticles(searchTerm, currentCategory, currentTag);
+      });
+      
+      // Category filtering
+      categoryButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          // Update active category button
+          categoryButtons.forEach(btn => {
+            btn.classList.remove('bg-blue-50', 'text-blue-700');
+            btn.classList.add('text-gray-600', 'hover:bg-gray-50');
+          });
+          this.classList.add('bg-blue-50', 'text-blue-700');
+          this.classList.remove('text-gray-600', 'hover:bg-gray-50');
+          
+          currentCategory = this.dataset.category;
+          const searchTerm = searchInput.value.toLowerCase();
+          filterArticles(searchTerm, currentCategory, currentTag);
+        });
+      });
+      
+      // Tag filtering
+      tagButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          // Toggle tag selection
+          if (currentTag === this.dataset.tag) {
+            currentTag = null;
+            this.classList.remove('bg-blue-100', 'text-blue-700');
+            this.classList.add('bg-gray-100', 'text-gray-600');
+          } else {
+            // Clear previous tag selection
+            tagButtons.forEach(btn => {
+              btn.classList.remove('bg-blue-100', 'text-blue-700');
+              btn.classList.add('bg-gray-100', 'text-gray-600');
+            });
+            
+            currentTag = this.dataset.tag;
+            this.classList.add('bg-blue-100', 'text-blue-700');
+            this.classList.remove('bg-gray-100', 'text-gray-600');
+          }
+          
+          const searchTerm = searchInput.value.toLowerCase();
+          filterArticles(searchTerm, currentCategory, currentTag);
+        });
+      });
+      
+      function filterArticles(searchTerm, category, tag) {
+        articles.forEach(article => {
+          const title = article.querySelector('h3').textContent.toLowerCase();
+          const content = article.querySelector('p').textContent.toLowerCase();
+          const articleCategory = article.dataset.category;
+          const articleTags = article.dataset.tags.split(',');
+          
+          // Check search term
+          const matchesSearch = searchTerm === '' || title.includes(searchTerm) || content.includes(searchTerm);
+          
+          // Check category
+          const matchesCategory = category === 'all' || articleCategory === category;
+          
+          // Check tag
+          const matchesTag = tag === null || articleTags.includes(tag);
+          
+          if (matchesSearch && matchesCategory && matchesTag) {
+            article.style.display = 'block';
+            
+            // Highlight search terms
+            if (searchTerm) {
+              highlightSearchTerm(article, searchTerm);
+            } else {
+              removeHighlights(article);
+            }
+          } else {
+            article.style.display = 'none';
+          }
+        });
+      }
+      
+      function highlightSearchTerm(article, term) {
+        const title = article.querySelector('h3');
+        const content = article.querySelector('p');
+        
+        [title, content].forEach(element => {
+          const text = element.textContent;
+          const regex = new RegExp(`(${term})`, 'gi');
+          element.innerHTML = text.replace(regex, '<span class="search-highlight">$1</span>');
+        });
+      }
+      
+      function removeHighlights(article) {
+        const highlights = article.querySelectorAll('.search-highlight');
+        highlights.forEach(highlight => {
+          highlight.outerHTML = highlight.innerHTML;
+        });
+      }
+    });
+  </script>
+</body>
+</html>
