@@ -17,9 +17,14 @@ const getOpenAIApiKey = () => {
   return apiKey;
 };
 
-const openai = new OpenAI({
-  apiKey: getOpenAIApiKey(),
-});
+// Lazy initialize OpenAI client to avoid module-level failures
+const getOpenAIClient = () => {
+  const apiKey = getOpenAIApiKey();
+  if (!apiKey) {
+    return null;
+  }
+  return new OpenAI({ apiKey });
+};
 
 // HIPAA-compliant ICD-10 extraction endpoint
 exports.extractICD10Codes = functions
@@ -53,12 +58,13 @@ exports.extractICD10Codes = functions
       );
     }
 
+    const openai = getOpenAIClient();
     const apiKey = getOpenAIApiKey();
     console.log('API key check - length:', apiKey ? apiKey.length : 'null');
     console.log('API key starts with sk-:', apiKey ? apiKey.startsWith('sk-') : 'no key');
     
-    if (!apiKey) {
-      console.error('OpenAI API key not configured - returning fallback');
+    if (!openai) {
+      console.error('OpenAI client not initialized - returning fallback');
       // Provide fallback extraction with clear error message
       const fallbackCodes = extractCodesWithRegex(consultationText);
       
@@ -71,7 +77,7 @@ exports.extractICD10Codes = functions
       };
     }
     
-    console.log('OpenAI API key found, proceeding with AI extraction...');
+    console.log('OpenAI client initialized successfully, proceeding with AI extraction...');
 
     try {
       // Call OpenAI API for ICD-10 extraction
