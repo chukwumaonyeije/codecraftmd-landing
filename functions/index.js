@@ -46,16 +46,19 @@ exports.extractICD10Codes = functions
       );
     }
 
-    if (consultationText.length > 10000) {
+    if (consultationText.length > 50000) {
       throw new functions.https.HttpsError(
         'invalid-argument',
-        'Consultation text exceeds maximum length of 10,000 characters.'
+        'Consultation text exceeds maximum length of 50,000 characters.'
       );
     }
 
     const apiKey = getOpenAIApiKey();
+    console.log('API key check - length:', apiKey ? apiKey.length : 'null');
+    console.log('API key starts with sk-:', apiKey ? apiKey.startsWith('sk-') : 'no key');
+    
     if (!apiKey) {
-      console.error('OpenAI API key not configured');
+      console.error('OpenAI API key not configured - returning fallback');
       // Provide fallback extraction with clear error message
       const fallbackCodes = extractCodesWithRegex(consultationText);
       
@@ -67,6 +70,8 @@ exports.extractICD10Codes = functions
         warning: 'Error extracting codes: OpenAI API key not configured. Using basic code detection. Please review carefully.'
       };
     }
+    
+    console.log('OpenAI API key found, proceeding with AI extraction...');
 
     try {
       // Call OpenAI API for ICD-10 extraction
