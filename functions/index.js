@@ -7,9 +7,18 @@ require('dotenv').config();
 
 admin.initializeApp();
 
-// Initialize OpenAI with API key from environment variables
+// Initialize OpenAI with API key from Firebase config or environment variables
+const getOpenAIApiKey = () => {
+  const apiKey = functions.config().openai?.api_key || process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    console.error('OpenAI API key not found in Firebase config or environment variables');
+    console.log('Available config keys:', Object.keys(functions.config()));
+  }
+  return apiKey;
+};
+
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: getOpenAIApiKey(),
 });
 
 // HIPAA-compliant ICD-10 extraction endpoint
@@ -42,6 +51,21 @@ exports.extractICD10Codes = functions
         'invalid-argument',
         'Consultation text exceeds maximum length of 10,000 characters.'
       );
+    }
+
+    const apiKey = getOpenAIApiKey();
+    if (!apiKey) {
+      console.error('OpenAI API key not configured');
+      // Provide fallback extraction with clear error message
+      const fallbackCodes = extractCodesWithRegex(consultationText);
+      
+      return {
+        success: true,
+        codes: fallbackCodes,
+        timestamp: new Date().toISOString(),
+        method: 'fallback_regex',
+        warning: 'Error extracting codes: OpenAI API key not configured. Using basic code detection. Please review carefully.'
+      };
     }
 
     try {
