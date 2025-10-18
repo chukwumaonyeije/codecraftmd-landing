@@ -1,0 +1,832 @@
+const functions = require('firebase-functions');
+const admin = require('firebase-admin');
+const { OpenAI } = require('openai');
+const stripe = require('stripe')(functions.config().stripe.secret_key);
+const cors = require('cors')({ origin: true });
+
+// Load environment variables
+require('dotenv').config();
+
+admin.initializeApp();
+
+// Initialize OpenAI with API key from Firebase Functions config
+let openai = null;
+function getOpenAI() {
+  if (!openai) {
+    const apiKey = functions.config().openai?.api_key;
+    if (!apiKey) {
+      throw new Error('OpenAI API key not configured. Please set it using: firebase functions:config:set openai.api_key="your_key"');
+    }
+    openai = new OpenAI({
+      apiKey: apiKey,
+    });
+  }
+  return openai;
+}
+
+// HIPAA-compliant ICD-10 extraction endpoint
+exports.extractICD10Codes = functions
+  .runWith({ 
+    timeoutSeconds: 60, 
+    memory: '256MB'
+  })
+  .https.onRequest(async (req, res) => {
+    return cors(req, res, async () => {
+      console.log('🚀 extractICD10Codes function called');
+      console.log('📄 Request method:', req.method);
+      console.log('📄 Request headers:', JSON.stringify(req.headers, null, 2));
+      console.log('📄 Request body:', JSON.stringify(req.body, null, 2));
+      
+      // Handle preflight OPTIONS request
+      if (req.method === 'OPTIONS') {
+        console.log('🚁 Handling CORS preflight request');
+        return res.status(204).send('');
+      }
+      
+      // Only allow POST requests
+      if (req.method !== 'POST') {
+        console.log('❌ Invalid request method:', req.method);
+        return res.status(405).json({ error: 'Method not allowed. Use POST.' });
+      }
+      
+      try {
+        // Verify authentication
+        console.log('🔐 Checking authorization...');
+        const token = req.headers.authorization?.split('Bearer ')[1];
+        if (!token) {
+          console.log('❌ No authorization token provided');
+          return res.status(401).json({ error: 'Unauthorized - No token provided' });
+        }
+        
+        console.log('🔍 Verifying Firebase ID token...');
+        const decodedToken = await admin.auth().verifyIdToken(token);
+        console.log('✅ Token verified for user:', decodedToken.uid);
+        
+        // Check if request body exists
+        if (!req.body) {
+          console.log('❌ No request body provided');
+          return res.status(400).json({ error: 'Request body is required' });
+        }
+        
+        console.log('📄 Request body type:', typeof req.body);
+        console.log('📄 Request body keys:', Object.keys(req.body || {}));
+        
+        const { consultationText } = req.body;
+        console.log('📝 Input validation - text length:', consultationText ? consultationText.length : 'undefined');
+        console.log('📝 Input validation - text type:', typeof consultationText);
+
+        // Validate input
+        if (!consultationText || typeof consultationText !== 'string') {
+          console.log('❌ Input validation failed: consultation text missing or invalid type');
+          return res.status(400).json({ error: 'Consultation text is required and must be a string.' });
+        }
+
+        if (consultationText.length > 50000) {
+          console.log('❌ Input validation failed: text too long (', consultationText.length, 'characters)');
+          return res.status(400).json({ error: 'Consultation text exceeds maximum length of 50,000 characters.' });
+        }
+        
+        console.log('✅ Input validation passed');
+        console.log('🔥 Starting OpenAI processing...');
+
+        try {
+          // Call OpenAI API for ICD-10 extraction
+          console.log('🔍 Attempting to initialize OpenAI client...');
+          const openaiClient = getOpenAI();
+          console.log('✅ OpenAI client initialized successfully');
+          console.log('🚀 Making OpenAI API request...');
+          
+          const completion = await openaiClient.chat.completions.create({
+            model: 'gpt-4',
+            messages: [
+              {
+                role: 'system',
+content: `You are a medical coding expert specializing in ICD-10 diagnosis code extraction, CPT code selection, and medical necessity documentation. 
+                         Extract ICD-10 codes and appropriate CPT codes from clinical notes with high accuracy. 
+                         
+                         IMPORTANT: Return ONLY a valid JSON object in this exact format:
+                         {
+                           "icd10_codes": [
+                             {"code": "[ICD-10 code]", "description": "[full ICD-10 description]"}
+                           ],
+                           "cpt_code": "[appropriate CPT code]",
+                           "cpt_justification": "[detailed CPT justification with key components met]",
+                           "medical_necessity": "[comprehensive medical necessity summary explaining why services were clinically appropriate and supported by documented findings]"
+                         }
+                         
+                         For CPT justification, include:
+                         - Level of service complexity
+                         - Key components addressed (history, examination, medical decision making)
+                         - Specific clinical findings that support the code level
+                         
+                         For medical necessity, provide:
+                         - Clinical rationale for the encounter
+                         - Documented symptoms and findings
+                         - Diagnostic workup performed
+                         - Treatment plan rationale
+                         - Follow-up requirements
+                         
+                         Only include codes that are clearly supported by the documentation.
+                         Be conservative and precise - accuracy is more important than quantity.
+                         Do not include any text outside the JSON object.`
+              },
+              {
+                role: 'user',
+                content: `Extract ICD-10 codes from this clinical note:\n\n${consultationText}`
+              }
+            ],
+            temperature: 0.1,
+            max_tokens: 1000,
+          });
+
+          const result = completion.choices[0].message.content;
+          console.log('✅ OpenAI API response received');
+          console.log('📝 Response content length:', result.length);
+          console.log('📄 Raw OpenAI response content:', result);
+          
+          try {
+            console.log('🔄 Parsing OpenAI response...');
+            const extractedCodes = JSON.parse(result);
+            console.log('✅ JSON parsing successful');
+            console.log('📁 Parsed extractedCodes object:', JSON.stringify(extractedCodes, null, 2));
+            
+            // Handle different response formats and extract all codes
+            let allCodes = [];
+            
+            // Extract ICD-10 codes
+            if (Array.isArray(extractedCodes)) {
+              console.log('📎 Response is direct array of codes');
+              allCodes = extractedCodes;
+            } else if (extractedCodes.icd10_codes && Array.isArray(extractedCodes.icd10_codes)) {
+              console.log('📎 Response has icd10_codes array');
+              allCodes = [...extractedCodes.icd10_codes];
+              
+              // Also add CPT code if present
+              if (extractedCodes.cpt_code) {
+                console.log('📎 Adding CPT code:', extractedCodes.cpt_code);
+                allCodes.push({
+                  code: extractedCodes.cpt_code,
+                  description: extractedCodes.cpt_justification || 'CPT procedure code',
+                  type: 'CPT'
+                });
+              }
+            } else if (extractedCodes.codes && Array.isArray(extractedCodes.codes)) {
+              console.log('📎 Response has codes array');
+              allCodes = extractedCodes.codes;
+            } else {
+              console.log('📄 Unknown response format');
+              console.log('🤔 Available keys:', Object.keys(extractedCodes));
+              allCodes = [];
+            }
+            
+            // Validate and clean up codes
+            const validatedCodes = allCodes.map(codeObj => {
+              if (typeof codeObj === 'string') {
+                return {
+                  code: codeObj,
+                  description: 'Code extracted from text',
+                  confidence: 'medium'
+                };
+              }
+              
+              return {
+                code: codeObj.code || codeObj.icd10_code || 'Unknown',
+                description: codeObj.description || codeObj.desc || 'No description available',
+                confidence: codeObj.confidence || 'high',
+                type: codeObj.type || (codeObj.code && codeObj.code.match(/^\d{5}/) ? 'CPT' : 'ICD-10')
+              };
+            }).filter(code => code.code && code.code !== 'Unknown');
+            
+            console.log('📋 All codes extracted:', JSON.stringify(allCodes, null, 2));
+            console.log('🎯 Final validated codes:', JSON.stringify(validatedCodes, null, 2));
+
+            // Log extraction for audit purposes (without PHI)
+            await admin.firestore().collection('audit_logs').add({
+              userId: decodedToken.uid,
+              action: 'icd10_extraction',
+              timestamp: admin.firestore.FieldValue.serverTimestamp(),
+              codesExtracted: validatedCodes.length,
+              textLength: consultationText.length
+            });
+
+            return res.status(200).json({
+              success: true,
+              codes: validatedCodes,
+              timestamp: new Date().toISOString(),
+              medicalNecessity: extractedCodes.medical_necessity || 'Medical necessity summary not available - manual review recommended.',
+              cptDetails: {
+                code: extractedCodes.cpt_code || null,
+                justification: extractedCodes.cpt_justification || null
+              },
+              billingInfo: {
+                encounterType: extractedCodes.encounter_type || 'Office Visit',
+                complexity: extractedCodes.complexity || 'Moderate',
+                keyComponents: extractedCodes.key_components || null
+              },
+              debug: {
+                originalFormat: typeof extractedCodes,
+                codesFound: allCodes.length,
+                codesValidated: validatedCodes.length
+              }
+            });
+
+          } catch (parseError) {
+            // Fallback to regex extraction if AI response can't be parsed
+            console.warn('Failed to parse AI response, using fallback:', parseError);
+            
+            const fallbackCodes = extractCodesWithRegex(consultationText);
+            
+            return res.status(200).json({
+              success: true,
+              codes: fallbackCodes,
+              timestamp: new Date().toISOString(),
+              method: 'fallback_regex'
+            });
+          }
+
+        } catch (error) {
+          console.error('❌ OpenAI API Error:', error.message);
+          console.error('📊 Error details:', {
+            name: error.name,
+            status: error.status,
+            code: error.code
+          });
+          
+          // Check for specific API key errors
+          if (error.message.includes('API key')) {
+            console.error('🔑 API Key Issue: Please configure OpenAI API key using firebase functions:config:set');
+          }
+          
+          // Provide fallback extraction
+          const fallbackCodes = extractCodesWithRegex(consultationText);
+          
+          // Log the error for monitoring
+          await admin.firestore().collection('audit_logs').add({
+            userId: decodedToken.uid,
+            action: 'icd10_extraction_error',
+            timestamp: admin.firestore.FieldValue.serverTimestamp(),
+            error: error.message,
+            fallbackUsed: true
+          });
+
+          return res.status(200).json({
+            success: true,
+            codes: fallbackCodes,
+            timestamp: new Date().toISOString(),
+            method: 'fallback_regex',
+            warning: 'AI extraction failed, using basic pattern matching. Please review codes carefully.'
+          });
+        }
+      } catch (error) {
+        console.error('❌ FATAL ERROR in extractICD10Codes:', error.message);
+        console.error('📊 Full error stack:', error.stack);
+        console.error('📊 Error name:', error.name);
+        console.error('📊 Error code:', error.code);
+        
+        // Return detailed error for debugging
+        return res.status(500).json({ 
+          error: 'Internal server error',
+          debug: {
+            message: error.message,
+            name: error.name,
+            code: error.code
+          }
+        });
+      }
+    });
+  });
+
+// Fallback regex extraction function
+function extractCodesWithRegex(text) {
+  const icdPattern = /\b[A-TV-Z][0-9][0-9AB](?:\.[0-9A-TV-Z]{1,4})?\b/g;
+  const matches = [...new Set(text.match(icdPattern) || [])];
+  
+  return matches.map(code => ({
+    code: code.toUpperCase(),
+    description: 'Description not available (manual review required)',
+    confidence: 'low'
+  }));
+}
+
+// Function to validate and sanitize consultation data before saving
+exports.validateConsultation = functions.firestore
+  .document('consultations/{consultationId}')
+  .onWrite(async (change, context) => {
+    const before = change.before.exists ? change.before.data() : null;
+    const after = change.after.exists ? change.after.data() : null;
+
+    // Log all consultation operations for audit
+    if (after) {
+      await admin.firestore().collection('audit_logs').add({
+        userId: after.userId,
+        action: after.status === 'draft' ? 'consultation_draft_saved' : 'consultation_finalized',
+        consultationId: context.params.consultationId,
+        timestamp: admin.firestore.FieldValue.serverTimestamp(),
+        codesCount: after.extractedCodes ? after.extractedCodes.length : 0
+      });
+    }
+
+    return null;
+  });
+
+// Health check endpoint
+exports.healthCheck = functions.https.onRequest((req, res) => {
+  res.status(200).json({ 
+    status: 'healthy', 
+    timestamp: new Date().toISOString(),
+    service: 'codecraftmd-backend'
+  });
+});
+
+// Function to cleanup old consultation drafts (run monthly)
+exports.cleanupOldDrafts = functions.pubsub
+  .schedule('0 0 1 * *') // First day of every month
+  .onRun(async (context) => {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const oldDrafts = await admin.firestore()
+      .collection('consultations')
+      .where('status', '==', 'draft')
+      .where('createdAt', '<', admin.firestore.Timestamp.fromDate(thirtyDaysAgo))
+      .get();
+
+    const batch = admin.firestore().batch();
+    oldDrafts.docs.forEach(doc => {
+      batch.delete(doc.ref);
+    });
+
+    await batch.commit();
+    
+    console.log(`Cleaned up ${oldDrafts.size} old draft consultations`);
+    return null;
+  });
+
+// Manual credit adjustment for admin/testing (remove in production)
+exports.adjustCredits = functions.https.onRequest(async (req, res) => {
+  return cors(req, res, async () => {
+    try {
+      console.log('🔧 Manual credit adjustment requested');
+      
+      // Security check - only allow for specific emails
+      const { email, credits, adminKey } = req.body;
+      
+      // Simple admin key check (in production, use proper admin authentication)
+      if (adminKey !== 'codecraftmd-admin-2024') {
+        return res.status(403).json({ error: 'Unauthorized admin access' });
+      }
+      
+      if (!email || typeof credits !== 'number') {
+        return res.status(400).json({ error: 'Email and credits number required' });
+      }
+      
+      // Only allow for specific testing emails
+      const allowedEmails = ['onyeije@gmail.com'];
+      if (!allowedEmails.includes(email)) {
+        return res.status(403).json({ error: 'Credit adjustment not allowed for this email' });
+      }
+      
+      // Find user by email
+      const usersSnapshot = await admin.firestore()
+        .collection('users')
+        .where('email', '==', email)
+        .limit(1)
+        .get();
+      
+      if (usersSnapshot.empty) {
+        return res.status(404).json({ error: 'User not found with email: ' + email });
+      }
+      
+      const userDoc = usersSnapshot.docs[0];
+      const userId = userDoc.id;
+      
+      // Update credits
+      await admin.firestore().collection('users').doc(userId).update({
+        credits: credits,
+        isTestingAccount: true,
+        lastCreditAdjustment: {
+          amount: credits,
+          timestamp: admin.firestore.FieldValue.serverTimestamp(),
+          reason: 'Manual adjustment for testing'
+        }
+      });
+      
+      console.log(`✅ Set credits to ${credits} for user ${email} (${userId})`);
+      
+      return res.status(200).json({ 
+        success: true, 
+        message: `Credits set to ${credits} for ${email}`,
+        userId: userId
+      });
+      
+    } catch (error) {
+      console.error('❌ Error adjusting credits:', error);
+      return res.status(500).json({ error: 'Error adjusting credits: ' + error.message });
+    }
+  });
+});
+
+// ===== STRIPE PAYMENT INTEGRATION =====
+
+// Create Payment Intent for Stripe
+exports.createPaymentIntent = functions.https.onRequest(async (req, res) => {
+  return cors(req, res, async () => {
+    try {
+      // Verify authentication
+      const token = req.headers.authorization?.split('Bearer ')[1];
+      if (!token) {
+        return res.status(401).json({ error: 'Unauthorized - No token provided' });
+      }
+
+      const decodedToken = await admin.auth().verifyIdToken(token);
+      const { amount, currency = 'usd', customerId } = req.body;
+
+      // Validate request
+      if (!amount || amount < 1) { // Minimum $1.00
+        return res.status(400).json({ error: 'Invalid amount - minimum $1.00' });
+      }
+
+      const paymentIntentData = {
+        amount: Math.round(amount * 100), // Convert to cents
+        currency,
+        automatic_payment_methods: {
+          enabled: true,
+        },
+        metadata: {
+          service: 'CodeCraftMD',
+          firebase_uid: decodedToken.uid,
+          timestamp: new Date().toISOString()
+        }
+      };
+
+      // Add customer if provided
+      if (customerId) {
+        paymentIntentData.customer = customerId;
+      }
+
+      const paymentIntent = await stripe.paymentIntents.create(paymentIntentData);
+
+      return res.status(200).json({
+        clientSecret: paymentIntent.client_secret,
+        paymentIntentId: paymentIntent.id
+      });
+    } catch (error) {
+      console.error('Error creating payment intent:', error);
+      return res.status(500).json({ error: 'Error creating payment intent: ' + error.message });
+    }
+  });
+});
+
+// Create Stripe Customer
+exports.createCustomer = functions.https.onRequest(async (req, res) => {
+  return cors(req, res, async () => {
+    try {
+      // Verify authentication
+      const token = req.headers.authorization?.split('Bearer ')[1];
+      if (!token) {
+        return res.status(401).json({ error: 'Unauthorized - No token provided' });
+      }
+
+      const decodedToken = await admin.auth().verifyIdToken(token);
+      const authUid = decodedToken.uid;
+
+      const { email, name, uid } = req.body;
+
+      // Ensure user can only create customer for themselves
+      if (uid && uid !== authUid) {
+        return res.status(403).json({ error: 'Cannot create customer for another user' });
+      }
+
+      const customerEmail = email || decodedToken.email;
+      const customerName = name || decodedToken.name || customerEmail;
+
+      if (!customerEmail) {
+        return res.status(400).json({ error: 'Email is required' });
+      }
+
+      const customer = await stripe.customers.create({
+        email: customerEmail,
+        name: customerName,
+        metadata: {
+          firebase_uid: authUid,
+          created_via: 'CodeCraftMD'
+        }
+      });
+
+      // Store customer ID in Firestore
+      await admin.firestore().collection('users').doc(authUid).set({
+        stripeCustomerId: customer.id,
+        email: customerEmail,
+        name: customerName,
+        credits: 5, // Give 5 free credits to new users
+        createdAt: admin.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+
+      return res.status(200).json({
+        customerId: customer.id,
+        message: 'Customer created successfully'
+      });
+    } catch (error) {
+      console.error('Error creating customer:', error);
+      return res.status(500).json({ error: 'Error creating customer: ' + error.message });
+    }
+  });
+});
+
+// Handle Stripe Webhooks
+exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
+  const sig = req.headers['stripe-signature'];
+  const endpointSecret = functions.config().stripe.webhook_secret;
+
+  console.log('🔔 Stripe webhook received');
+  console.log('Headers:', req.headers);
+  console.log('Webhook endpoint secret configured:', !!endpointSecret);
+
+  let event;
+
+  try {
+    event = stripe.webhooks.constructEvent(req.rawBody, sig, endpointSecret);
+    console.log('✅ Webhook signature verified successfully');
+    console.log('Event type:', event.type);
+    console.log('Event ID:', event.id);
+  } catch (err) {
+    console.error('❌ Webhook signature verification failed:', err.message);
+    console.error('Raw body length:', req.rawBody ? req.rawBody.length : 'No raw body');
+    console.error('Signature:', sig);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  // Handle the event
+  switch (event.type) {
+    case 'payment_intent.succeeded':
+      const paymentIntent = event.data.object;
+      console.log('💰 Payment succeeded:', paymentIntent.id);
+      console.log('Amount:', paymentIntent.amount, 'Currency:', paymentIntent.currency);
+      console.log('Customer ID:', paymentIntent.customer);
+      console.log('Metadata:', paymentIntent.metadata);
+      
+      // Update user's subscription status or credits
+      await handleSuccessfulPayment(paymentIntent);
+      break;
+    
+    case 'payment_intent.payment_failed':
+      const failedPayment = event.data.object;
+      console.log('❌ Payment failed:', failedPayment.id);
+      console.log('Failure reason:', failedPayment.last_payment_error);
+      
+      // Handle failed payment
+      await handleFailedPayment(failedPayment);
+      break;
+    
+    case 'payment_intent.created':
+      console.log('🎆 Payment intent created:', event.data.object.id);
+      break;
+    
+    case 'charge.succeeded':
+      console.log('💳 Charge succeeded:', event.data.object.id);
+      break;
+    
+    default:
+      console.log(`🤷‍♂️ Unhandled event type ${event.type}`);
+  }
+
+  res.json({ received: true });
+});
+
+// Helper function to handle successful payments
+async function handleSuccessfulPayment(paymentIntent) {
+  try {
+    console.log('🔄 Processing successful payment:', paymentIntent.id);
+    console.log('Payment amount:', paymentIntent.amount, 'cents');
+    console.log('Customer ID:', paymentIntent.customer);
+    console.log('Metadata:', paymentIntent.metadata);
+    
+    const customerId = paymentIntent.customer;
+    const firebaseUid = paymentIntent.metadata?.firebase_uid;
+    
+    let userId = null;
+    let userDoc = null;
+    
+    // Try multiple methods to find the user
+    if (firebaseUid) {
+      console.log('🔍 Trying to find user by Firebase UID:', firebaseUid);
+      userDoc = await admin.firestore().collection('users').doc(firebaseUid).get();
+      if (userDoc.exists) {
+        userId = firebaseUid;
+        console.log('✅ Found user by Firebase UID:', userId);
+      }
+    }
+    
+    if (!userId && customerId) {
+      console.log('🔍 Trying to find user by Stripe Customer ID:', customerId);
+      const userQuery = await admin.firestore()
+        .collection('users')
+        .where('stripeCustomerId', '==', customerId)
+        .limit(1)
+        .get();
+
+      if (!userQuery.empty) {
+        userDoc = userQuery.docs[0];
+        userId = userDoc.id;
+        console.log('✅ Found user by Stripe Customer ID:', userId);
+      }
+    }
+    
+    if (!userId) {
+      console.error('❌ No user found for payment!');
+      console.error('Customer ID:', customerId);
+      console.error('Firebase UID:', firebaseUid);
+      console.error('Available metadata:', paymentIntent.metadata);
+      return;
+    }
+
+    // Calculate credits to add
+    const amount = paymentIntent.amount / 100; // Convert from cents
+    let creditsToAdd;
+    
+    // Credit packages based on amount
+    if (amount === 10) creditsToAdd = 10;      // $10 = 10 credits
+    else if (amount === 25) creditsToAdd = 25; // $25 = 25 credits
+    else if (amount === 50) creditsToAdd = 50; // $50 = 50 credits
+    else if (amount === 100) creditsToAdd = 100; // $100 = 100 credits
+    else creditsToAdd = Math.floor(amount); // Fallback: 1 credit per dollar
+    
+    console.log(`💰 Adding ${creditsToAdd} credits for $${amount} payment`);
+
+    // Update user's credits
+    const updateData = {
+      credits: admin.firestore.FieldValue.increment(creditsToAdd),
+      lastPayment: {
+        amount,
+        creditsAdded: creditsToAdd,
+        paymentIntentId: paymentIntent.id,
+        timestamp: admin.firestore.FieldValue.serverTimestamp()
+      }
+    };
+    
+    // Add customer ID if we found user by UID but no customer ID exists
+    if (customerId && (!userDoc.data()?.stripeCustomerId)) {
+      updateData.stripeCustomerId = customerId;
+      console.log('🔗 Linking Stripe Customer ID to user profile');
+    }
+    
+    await admin.firestore().collection('users').doc(userId).update(updateData);
+
+    console.log(`✅ Successfully added ${creditsToAdd} credits to user ${userId}`);
+    
+    // Log for audit
+    await admin.firestore().collection('audit_logs').add({
+      action: 'credits_purchased',
+      userId: userId,
+      amount: amount,
+      creditsAdded: creditsToAdd,
+      paymentIntentId: paymentIntent.id,
+      timestamp: admin.firestore.FieldValue.serverTimestamp()
+    });
+    
+  } catch (error) {
+    console.error('❌ Error handling successful payment:', error);
+    console.error('Payment ID:', paymentIntent.id);
+    console.error('Error details:', error.message);
+    console.error('Stack:', error.stack);
+  }
+}
+
+// Helper function to handle failed payments
+async function handleFailedPayment(paymentIntent) {
+  try {
+    console.log('Processing failed payment:', paymentIntent.id);
+    // Add any failed payment handling logic here
+    // For example, sending notification emails, updating user status, etc.
+  } catch (error) {
+    console.error('Error handling failed payment:', error);
+  }
+}
+
+// Get user's payment history and credits
+exports.getUserPaymentInfo = functions.https.onRequest(async (req, res) => {
+  return cors(req, res, async () => {
+    try {
+      // Verify authentication
+      const token = req.headers.authorization?.split('Bearer ')[1];
+      if (!token) {
+        return res.status(401).json({ error: 'Unauthorized - No token provided' });
+      }
+
+      const decodedToken = await admin.auth().verifyIdToken(token);
+      const userId = decodedToken.uid;
+
+      const userDoc = await admin.firestore().collection('users').doc(userId).get();
+      const userEmail = decodedToken.email || 'unknown@example.com';
+
+      // Special handling for testing account - unlimited credits
+      const isTestingAccount = userEmail === 'onyeije@gmail.com';
+      
+      if (!userDoc.exists) {
+        // Create new user document with default values
+        const newUserData = {
+          credits: isTestingAccount ? 999999 : 5, // Unlimited credits for testing, 5 for others
+          email: userEmail,
+          name: decodedToken.name || userEmail || 'Unknown User',
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          isTestingAccount: isTestingAccount
+        };
+        
+        await admin.firestore().collection('users').doc(userId).set(newUserData);
+        
+        return res.status(200).json({
+          credits: newUserData.credits,
+          stripeCustomerId: null,
+          lastPayment: null,
+          email: newUserData.email,
+          isTestingAccount: isTestingAccount
+        });
+      }
+
+      const userData = userDoc.data();
+      
+      // For testing account, always return high credits and auto-refresh if low
+      if (isTestingAccount && (userData.credits || 0) < 10) {
+        console.log('🧪 Refreshing credits for testing account:', userEmail);
+        await admin.firestore().collection('users').doc(userId).update({
+          credits: 999999,
+          isTestingAccount: true
+        });
+        
+        return res.status(200).json({
+          credits: 999999,
+          stripeCustomerId: userData.stripeCustomerId,
+          lastPayment: userData.lastPayment || null,
+          email: userData.email,
+          isTestingAccount: true
+        });
+      }
+      
+      return res.status(200).json({
+        credits: userData.credits || 0,
+        stripeCustomerId: userData.stripeCustomerId,
+        lastPayment: userData.lastPayment || null,
+        email: userData.email,
+        isTestingAccount: isTestingAccount
+      });
+    } catch (error) {
+      console.error('Error getting user payment info:', error);
+      return res.status(500).json({ error: 'Error retrieving payment information' });
+    }
+  });
+});
+
+// Usage tracking for billing analysis
+exports.trackUsage = functions.https.onRequest(async (req, res) => {
+  return cors(req, res, async () => {
+    try {
+      // Verify authentication
+      const token = req.headers.authorization?.split('Bearer ')[1];
+      if (!token) {
+        return res.status(401).json({ error: 'Unauthorized - No token provided' });
+      }
+
+      const decodedToken = await admin.auth().verifyIdToken(token);
+      const userId = decodedToken.uid;
+      const { action, details } = req.body;
+
+      // Track usage in Firestore
+      await admin.firestore().collection('usage').add({
+        userId,
+        action, // 'ai_analysis', 'pdf_generation', 'code_extraction'
+        details: details || {},
+        timestamp: admin.firestore.FieldValue.serverTimestamp()
+      });
+
+      // Decrement user credits for paid actions
+      const paidActions = ['ai_analysis', 'enhanced_billing'];
+      if (paidActions.includes(action)) {
+        const userRef = admin.firestore().collection('users').doc(userId);
+        const userDoc = await userRef.get();
+        const userData = userDoc.data();
+        const credits = userData?.credits || 0;
+        const userEmail = decodedToken.email || 'unknown@example.com';
+        const isTestingAccount = userEmail === 'onyeije@gmail.com' || userData?.isTestingAccount;
+        
+        // Skip credit deduction for testing account
+        if (isTestingAccount) {
+          console.log('🧪 Testing account - skipping credit deduction for:', userEmail);
+          return res.status(200).json({ success: true, message: 'Testing account - unlimited usage' });
+        }
+        
+        if (credits <= 0) {
+          return res.status(429).json({ error: 'Insufficient credits' });
+        }
+        
+        await userRef.update({
+          credits: admin.firestore.FieldValue.increment(-1)
+        });
+      }
+
+      return res.status(200).json({ success: true });
+    } catch (error) {
+      console.error('Error tracking usage:', error);
+      return res.status(500).json({ error: 'Error tracking usage' });
+    }
+  });
+});

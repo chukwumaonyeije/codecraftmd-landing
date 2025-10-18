@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Lead Magnet Popup</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+    <div class="max-w-2xl mx-auto p-8">
+        <div class="bg-white rounded-lg shadow-lg p-8 text-center">
+            <h1 class="text-3xl font-bold text-gray-900 mb-6">Lead Magnet Popup Test</h1>
+            <p class="text-gray-600 mb-8">Use these buttons to test your popup functionality:</p>
+            
+            <div class="space-y-4">
+                <button onclick="showPopup()" class="w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition font-medium">
+                    🧪 Show Popup Manually
+                </button>
+                
+                <button onclick="resetPopup()" class="w-full bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition font-medium">
+                    🔄 Reset Popup (Clear Storage)
+                </button>
+                
+                <button onclick="checkStatus()" class="w-full bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition font-medium">
+                    📊 Check Popup Status
+                </button>
+            </div>
+            
+            <div id="status" class="mt-8 p-4 bg-gray-50 rounded-lg hidden">
+                <h3 class="font-semibold text-gray-900 mb-2">Status:</h3>
+                <div id="statusContent" class="text-left text-sm text-gray-700"></div>
+            </div>
+            
+            <div class="mt-8 text-xs text-gray-500">
+                <p><strong>Instructions:</strong></p>
+                <ul class="text-left mt-2 space-y-1">
+                    <li>• Click "Show Popup" to trigger the lead magnet popup manually</li>
+                    <li>• Click "Reset Popup" to clear localStorage and allow popup to show again</li>
+                    <li>• Click "Check Status" to see current popup state</li>
+                </ul>
+            </div>
+            
+            <div class="mt-6">
+                <a href="index.html" class="text-blue-600 hover:text-blue-800 font-medium">
+                    ← Back to Main Site
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showPopup() {
+            if (typeof window.showLeadMagnet === 'function') {
+                window.showLeadMagnet();
+                updateStatus('Popup triggered manually', 'success');
+            } else {
+                // If function doesn't exist, redirect to main page
+                alert('Popup function not found. Redirecting to main page...');
+                window.location.href = 'index.html';
+            }
+        }
+        
+        function resetPopup() {
+            localStorage.removeItem('leadMagnetSeen');
+            updateStatus('Popup reset - localStorage cleared', 'success');
+        }
+        
+        function checkStatus() {
+            const hasSeenPopup = localStorage.getItem('leadMagnetSeen');
+            const status = hasSeenPopup ? 'User has seen popup' : 'Popup not shown yet';
+            const details = {
+                'localStorage key': hasSeenPopup ? 'leadMagnetSeen = true' : 'leadMagnetSeen = null',
+                'Popup will show': hasSeenPopup ? 'No (already shown)' : 'Yes (next visit/scroll)',
+                'Current page': window.location.pathname
+            };
+            
+            let detailsHtml = '';
+            for (const [key, value] of Object.entries(details)) {
+                detailsHtml += `<div><strong>${key}:</strong> ${value}</div>`;
+            }
+            
+            document.getElementById('statusContent').innerHTML = detailsHtml;
+            document.getElementById('status').classList.remove('hidden');
+        }
+        
+        function updateStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            const contentDiv = document.getElementById('statusContent');
+            
+            contentDiv.innerHTML = `<div class="text-${type === 'success' ? 'green' : 'red'}-700 font-medium">${message}</div>`;
+            statusDiv.classList.remove('hidden');
+            
+            // Hide after 3 seconds
+            setTimeout(() => {
+                statusDiv.classList.add('hidden');
+            }, 3000);
+        }
+        
+        // Try to load the main popup functions
+        if (window.location.pathname.includes('test-popup.html')) {
+            // We're on the test page, try to load popup functionality
+            const script = document.createElement('script');
+            script.src = 'index.html';
+            // This won't work directly, so we'll just provide instructions
+        }
+    </script>
+</body>
+</html>
