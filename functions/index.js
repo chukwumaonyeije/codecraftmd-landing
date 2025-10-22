@@ -80,45 +80,127 @@ exports.extractICD10Codes = functions
     console.log('OpenAI client initialized successfully, proceeding with AI extraction...');
 
     try {
-      // Call OpenAI API for ICD-10 extraction
+// Call OpenAI API for ICD-10 extraction with structured output
       const completion = await openai.chat.completions.create({
-        model: 'gpt-4',
+        model: 'gpt-4o',
         messages: [
           {
             role: 'system',
-            content: `You are a medical coding expert specializing in ICD-10 diagnosis code extraction. 
-                     Extract ICD-10 codes from clinical notes with high accuracy. 
-                     Return only a JSON array of objects with "code" and "description" fields.
-                     Only include codes that are clearly supported by the documentation.
-                     Be conservative and precise - accuracy is more important than quantity.`
+            content: `You are an expert medical coder specializing in ICD-10 diagnosis code extraction from clinical documentation.
+
+Your task is to:
+1. Carefully analyze the clinical note for all documented diagnoses, symptoms, and conditions
+2. Extract only diagnoses that are clearly supported by the documentation
+3. Assign appropriate ICD-10 codes using the most specific code available
+4. Provide confidence scores based on documentation clarity
+5. Quote specific evidence from the note that supports each diagnosis
+6. Classify each diagnosis by priority (primary/secondary) and status
+
+Guidelines:
+- Be conservative: only extract diagnoses with clear clinical evidence
+- Use the most specific ICD-10 code available
+- Primary diagnoses are the main reason for the encounter
+- Secondary diagnoses are additional conditions that affect care
+- Status classifications:
+  * confirmed: definitive diagnosis stated
+  * suspected: provisional or possible diagnosis
+  * rule_out: condition being ruled out
+  * history_of: past medical history
+- Confidence should reflect documentation quality and clinical certainty
+- Evidence quotes should be direct excerpts from the note`
           },
           {
             role: 'user',
-            content: `Extract ICD-10 codes from this clinical note:\n\n${consultationText}`
+            content: `Please analyze this clinical note and extract all relevant ICD-10 diagnoses:\n\n${consultationText}`
           }
         ],
+        response_format: {
+          type: 'json_schema',
+          json_schema: {
+            name: 'diagnosis_extraction',
+            schema: {
+              type: "object",
+              properties: {
+                diagnoses: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      code: {
+                        type: "string",
+                        pattern: "^[A-TV-Z][0-9][0-9AB](\\.[0-9A-TV-Z]{1,4})?$",
+                        description: "Valid ICD-10 code format"
+                      },
+                      description: {
+                        type: "string",
+                        description: "Clear description of the diagnosis"
+                      },
+                      confidence: {
+                        type: "number",
+                        minimum: 0,
+                        maximum: 1,
+                        description: "Confidence level from 0 to 1"
+                      },
+                      evidence: {
+                        type: "string",
+                        description: "Direct quote from the clinical note that supports this diagnosis"
+                      },
+                      priority: {
+                        type: "string",
+                        enum: ["primary", "secondary"],
+                        description: "Whether this is a primary or secondary diagnosis"
+                      },
+                      status: {
+                        type: "string",
+                        enum: ["confirmed", "suspected", "rule_out", "history_of"],
+                        description: "Clinical status of the diagnosis"
+                      }
+                    },
+                    required: ["code", "description", "confidence", "evidence", "priority", "status"],
+                    additionalProperties: false
+                  }
+                }
+              },
+              required: ["diagnoses"],
+              additionalProperties: false
+            }
+          }
+        },
         temperature: 0.1,
-        max_tokens: 1000,
+        max_tokens: 2000,
       });
 
       const result = completion.choices[0].message.content;
       
       try {
-        const extractedCodes = JSON.parse(result);
+        const extractedData = JSON.parse(result);
         
         // Validate the response format
-        if (!Array.isArray(extractedCodes)) {
-          throw new Error('Response is not an array');
+        if (!extractedData || !Array.isArray(extractedData.diagnoses)) {
+          throw new Error('Invalid response structure from OpenAI');
         }
 
-        // Validate each code object
-        const validatedCodes = extractedCodes.filter(item => 
+        // Validate each diagnosis object
+        const validatedCodes = extractedData.diagnoses.filter(item => 
           item && 
           typeof item === 'object' && 
           typeof item.code === 'string' && 
           typeof item.description === 'string' &&
+          typeof item.confidence === 'number' &&
+          typeof item.evidence === 'string' &&
+          typeof item.priority === 'string' &&
+          typeof item.status === 'string' &&
+          ['primary', 'secondary'].includes(item.priority) &&
+          ['confirmed', 'suspected', 'rule_out', 'history_of'].includes(item.status) &&
           /^[A-TV-Z][0-9][0-9AB](\.[0-9A-TV-Z]{1,4})?$/.test(item.code)
-        );
+        ).map(item => ({
+          code: item.code.toUpperCase(),
+          description: item.description.trim(),
+          confidence: Math.max(0, Math.min(1, item.confidence)),
+          evidence: item.evidence.trim(),
+          priority: item.priority,
+          status: item.status
+        }));
 
         // Log extraction for audit purposes (without PHI)
         await admin.firestore().collection('audit_logs').add({
@@ -131,8 +213,10 @@ exports.extractICD10Codes = functions
 
         return {
           success: true,
-          codes: validatedCodes,
-          timestamp: new Date().toISOString()
+          diagnoses: validatedCodes,
+          timestamp: new Date().toISOString(),
+          model: 'gpt-4o',
+          method: 'structured_output'
         };
 
       } catch (parseError) {
