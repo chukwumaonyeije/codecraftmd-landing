@@ -14,6 +14,8 @@ export interface Diagnosis {
   validated?: boolean;       // Whether code has been validated against CMS database
   validationError?: string;  // Error message if validation failed
   officialDescription?: string; // Official CMS description if different from AI description
+  // Task 03: Prioritization fields
+  priorityScore?: number;    // Calculated priority score (0-1) for billing order
 }
 
 export interface ExtractCodesRequest {

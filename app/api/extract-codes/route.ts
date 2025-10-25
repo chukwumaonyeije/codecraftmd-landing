@@ -8,6 +8,7 @@ import {
   DiagnosisSchema 
 } from '@/types/diagnosis';
 import { validateICD10Codes } from '@/lib/icd10-validator';
+import { prioritizeDiagnoses } from '@/lib/diagnosis-prioritizer';
 
 // Initialize OpenAI client
 const openai = new OpenAI({
@@ -77,11 +78,17 @@ export async function POST(request: NextRequest) {
       };
     });
     
+    // Task 03: Prioritize and rank diagnoses
+    const prioritizedDiagnoses = prioritizeDiagnoses(
+      validatedDiagnoses,
+      body.clinicalNote
+    );
+    
     const processingTime = Date.now() - startTime;
 
     const response: ExtractCodesResponse = {
       success: true,
-      diagnoses: validatedDiagnoses,
+      diagnoses: prioritizedDiagnoses,
       timestamp: new Date().toISOString(),
       model: 'gpt-4o',
       processingTimeMs: processingTime
