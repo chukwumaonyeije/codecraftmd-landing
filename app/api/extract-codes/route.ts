@@ -7,6 +7,7 @@ import {
   ExtractCodesError,
   DiagnosisSchema 
 } from '@/types/diagnosis';
+import { validateICD10Codes } from '@/lib/icd10-validator';
 
 // Initialize OpenAI client
 const openai = new OpenAI({
@@ -59,13 +60,28 @@ export async function POST(request: NextRequest) {
     }
 
     // Extract codes with retry logic
-    const result = await extractCodesWithRetry(body.clinicalNote);
+    const diagnoses = await extractCodesWithRetry(body.clinicalNote);
+    
+    // Task 02: Validate extracted codes against CMS database
+    const codes = diagnoses.map(d => d.code);
+    const validationResults = await validateICD10Codes(codes);
+    
+    // Merge validation results with diagnoses
+    const validatedDiagnoses = diagnoses.map((diagnosis, index) => {
+      const validation = validationResults[index];
+      return {
+        ...diagnosis,
+        validated: validation.isValid,
+        validationError: validation.errorMessage,
+        officialDescription: validation.officialDescription
+      };
+    });
     
     const processingTime = Date.now() - startTime;
 
     const response: ExtractCodesResponse = {
       success: true,
-      diagnoses: result,
+      diagnoses: validatedDiagnoses,
       timestamp: new Date().toISOString(),
       model: 'gpt-4o',
       processingTimeMs: processingTime

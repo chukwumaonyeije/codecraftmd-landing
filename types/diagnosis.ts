@@ -10,6 +10,10 @@ export interface Diagnosis {
   evidence: string;          // Quote from clinical note supporting diagnosis
   priority: DiagnosisPriority;
   status: DiagnosisStatus;
+  // Task 02: Validation fields
+  validated?: boolean;       // Whether code has been validated against CMS database
+  validationError?: string;  // Error message if validation failed
+  officialDescription?: string; // Official CMS description if different from AI description
 }
 
 export interface ExtractCodesRequest {
