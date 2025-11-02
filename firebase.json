@@ -7,8 +7,16 @@
         "destination": "/dashboard.html"
       },
       {
+        "source": "/outreach",
+        "destination": "/outreach.html"
+      },
+      {
         "source": "/api/**",
         "function": "app"
+      },
+      {
+        "source": "**",
+        "destination": "/index.html"
       }
     ],
     "headers": [
