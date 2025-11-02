@@ -209,7 +209,7 @@ export default function DiagnosisExtractor({
                 
                 <div className="bg-gray-50 p-3 rounded-md">
                   <h5 className="text-sm font-medium text-gray-700 mb-1">Supporting Evidence:</h5>
-                  <p className="text-sm text-gray-600 italic">"{diagnosis.evidence}"</p>
+                  <p className="text-sm text-gray-600 italic">&quot;{diagnosis.evidence}&quot;</p>
                 </div>
               </div>
             ))}
