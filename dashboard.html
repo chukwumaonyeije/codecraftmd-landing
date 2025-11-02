@@ -204,6 +204,43 @@
       </div>
     </div>
 
+    <!-- Campaign Tracking (Admin Only) -->
+    <div id="campaignSection" class="hidden bg-white rounded-lg shadow p-6 mb-8">
+      <div class="flex justify-between items-center mb-6">
+        <div>
+          <h2 class="text-lg font-semibold text-gray-900">📊 Outreach Campaign Tracking</h2>
+          <p class="text-sm text-gray-500 mt-1">Monitor QR code campaigns and lead conversions</p>
+        </div>
+        <button id="refreshCampaignsBtn" class="text-sm text-blue-600 hover:text-blue-800 px-3 py-1 rounded border border-blue-200 hover:bg-blue-50">
+          🔄 Refresh
+        </button>
+      </div>
+      <div id="campaignStats" class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div class="bg-blue-50 p-4 rounded-lg">
+          <div class="text-sm text-gray-600">Total Visits</div>
+          <div id="totalVisits" class="text-2xl font-bold text-blue-700">0</div>
+        </div>
+        <div class="bg-green-50 p-4 rounded-lg">
+          <div class="text-sm text-gray-600">Sign-ups</div>
+          <div id="totalSignups" class="text-2xl font-bold text-green-700">0</div>
+        </div>
+        <div class="bg-purple-50 p-4 rounded-lg">
+          <div class="text-sm text-gray-600">Conversion Rate</div>
+          <div id="conversionRate" class="text-2xl font-bold text-purple-700">0%</div>
+        </div>
+        <div class="bg-yellow-50 p-4 rounded-lg">
+          <div class="text-sm text-gray-600">Active Campaigns</div>
+          <div id="activeCampaigns" class="text-2xl font-bold text-yellow-700">0</div>
+        </div>
+      </div>
+      <div id="campaignLeads" class="space-y-3">
+        <div class="text-center py-8">
+          <div class="text-gray-400 text-4xl mb-2">📧</div>
+          <p class="text-gray-500 text-sm">No campaign leads yet</p>
+        </div>
+      </div>
+    </div>
+
     <!-- Recent Consultations -->
     <div class="bg-white rounded-lg shadow p-6">
       <div class="flex justify-between items-center mb-6">
@@ -837,17 +874,45 @@
     
     async function callOpenAIForICD10(noteText) {
       // First try Firebase Function for secure server-side AI processing
+      console.log('🔥 Starting OpenAI API call via Firebase Function...');
+      console.log('📝 Note text length:', noteText.length);
+      
       try {
         const extractICD10 = functions.httpsCallable('extractICD10Codes');
         const result = await extractICD10({ consultationText: noteText });
         
+        console.log('🔄 Firebase Function response:', result.data);
+        
         if (result.data.success) {
           if (result.data.warning) {
+            console.warn('⚠️ API Warning:', result.data.warning);
             showError(result.data.warning);
           }
+          console.log('✅ Firebase Function returned codes:', result.data.codes);
+          console.log('📊 Full result.data:', JSON.stringify(result.data, null, 2));
+          
+          // ALWAYS store enhanced data globally for use in PDF generation
+          window.enhancedBillingData = {
+            icd10_codes: result.data.codes || [],
+            cpt_code: result.data.cptDetails?.code || '99213',
+            cpt_justification: result.data.cptDetails?.justification || 'Office visit for established patient with moderate complexity medical decision making.',
+            medical_necessity: result.data.medicalNecessity || 'Standard medical consultation with ICD-10 code extraction and billing documentation.',
+            encounter_type: result.data.billingInfo?.encounterType || 'consultation',
+            complexity: result.data.billingInfo?.complexity || 'moderate'
+          };
+          console.log('💾 Enhanced billing data stored from Firebase:', window.enhancedBillingData);
+          
+          // Check if we got the enhanced data from API
+          if (result.data.medicalNecessity && result.data.cptDetails) {
+            console.log('✅ Enhanced billing data received from API');
+          } else {
+            console.warn('⚠️ No enhanced billing data from API, using defaults');
+          }
+          
           return result.data.codes || [];
         } else {
-          throw new Error('AI extraction service returned an error');
+          console.error('❌ AI extraction service error:', result.data);
+          throw new Error('AI extraction service returned an error: ' + (result.data.error || 'Unknown error'));
         }
       } catch (error) {
         console.warn('Firebase Function not available, trying client-side approach:', error);
@@ -1030,6 +1095,7 @@
       console.log('generatePDF called');
       console.log('PDFMake available:', typeof pdfMake !== 'undefined');
       console.log('extractedCodes:', extractedCodes);
+      console.log('enhancedBillingData:', window.enhancedBillingData);
       console.log('userProfile:', userProfile);
       
       if (typeof pdfMake === 'undefined') {
@@ -1050,14 +1116,7 @@
         return;
       }
       
-      // Validate that we have some codes to include - create local copy for PDF
-      let codesForPDF = extractedCodes;
-      if (!codesForPDF || codesForPDF.length === 0) {
-        console.warn('No ICD codes found, creating PDF with placeholder');
-        // Add a placeholder code so PDF generation doesn't fail
-        codesForPDF = [{ code: 'No codes', description: 'No ICD-10 codes extracted yet' }];
-      }
-      console.log('Codes for PDF:', codesForPDF);
+      // Get form data
       const patientName = document.getElementById('patientName').value || 'N/A';
       const patientDOB = document.getElementById('patientDOB').value || 'N/A';
       const patientID = document.getElementById('patientID').value || 'N/A';
@@ -1066,7 +1125,49 @@
       const providerName = document.getElementById('providerName').value || 'N/A';
       const providerNPI = document.getElementById('providerNPI').value || 'N/A';
       const facilityName = document.getElementById('facilityName').value || 'N/A';
-      const serviceDate = document.getElementById('serviceDate').value || 'N/A';
+      const serviceDate = document.getElementById('serviceDate').value || new Date().toISOString().split('T')[0];
+      
+      // Use enhanced billing data if available, otherwise fallback to basic format
+      const billingData = window.enhancedBillingData;
+      console.log('📋 billingData:', billingData);
+      console.log('📋 billingData exists?', !!billingData);
+      
+      let cptCode = '99213';
+      let cptJustification = 'Office visit for established patient with moderate complexity medical decision making.';
+      let medicalNecessity = 'Standard medical consultation with ICD-10 code extraction and billing documentation.';
+      let codesForPDF = extractedCodes;
+      let extractedServiceDate = null;
+      
+      if (billingData) {
+        console.log('✅ Using enhanced billing data');
+        cptCode = billingData.cpt_code || cptCode;
+        cptJustification = billingData.cpt_justification || cptJustification;
+        medicalNecessity = billingData.medical_necessity || medicalNecessity;
+        codesForPDF = billingData.icd10_codes || extractedCodes;
+        
+        console.log('📝 CPT Code:', cptCode);
+        console.log('📝 CPT Justification:', cptJustification);
+        console.log('📝 Medical Necessity:', medicalNecessity);
+        
+        // Try to extract service date from AI analysis
+        if (billingData.patient_summary && billingData.patient_summary.service_date) {
+          extractedServiceDate = billingData.patient_summary.service_date;
+        }
+      }
+      
+      // Use extracted date if available, otherwise form date, otherwise blank for manual entry
+      let consultationServiceDate;
+      if (extractedServiceDate) {
+        consultationServiceDate = extractedServiceDate;
+      } else if (serviceDate && serviceDate !== new Date().toISOString().split('T')[0]) {
+        consultationServiceDate = serviceDate;
+      } else {
+        consultationServiceDate = '____________________'; // Blank line for manual entry
+      }
+      
+      if (!codesForPDF || codesForPDF.length === 0) {
+        codesForPDF = [{ code: 'No codes', description: 'No ICD-10 codes extracted yet' }];
+      }
       
       // Prepare signature image if available
       let signatureImage = null;
@@ -1076,12 +1177,12 @@
       
       const docDefinition = {
         content: [
-          // Professional Header with Logo
+          // Professional Header
           {
             columns: [
               {
                 text: [
-                  { text: '🏥 CodeCraftMD\n', style: 'companyName' },
+                  { text: 'CodeCraftMD\n', style: 'companyName' },
                   { text: 'Medical Billing Automation', style: 'tagline' }
                 ],
                 width: '60%'
@@ -1095,286 +1196,192 @@
                 width: '40%'
               }
             ],
-            margin: [0, 0, 0, 10]
+            margin: [0, 0, 0, 20]
           },
           
-          // Professional line separator
-          { text: '━'.repeat(80), style: 'separator', margin: [0, 10, 0, 20] },
+          // Professional separator line
+          { text: '_'.repeat(80), style: 'separator', margin: [0, 0, 0, 20] },
           
-          // Patient Information
-          { text: 'Patient Information', style: 'subheader' },
+          // Patient Information (inline format)
           {
-            table: {
-              widths: ['30%', '70%'],
-              body: [
-                ['Name:', patientName],
-                ['Date of Birth:', patientDOB],
-                ['Patient ID:', patientID],
-                ['Hospital/Facility:', patientHospital],
-                ['Gender:', patientGender]
-              ]
-            },
-            layout: 'noBorders',
-            margin: [0, 5, 0, 15]
+            text: [
+              { text: 'Patient Name: ', style: 'label' },
+              { text: patientName + '\n', style: 'value' },
+              { text: 'DOB: ', style: 'label' },
+              { text: patientDOB + '\n', style: 'value' },
+              { text: 'MRN: ', style: 'label' },
+              { text: patientID + '\n', style: 'value' },
+              { text: 'Date of Service: ', style: 'label' },
+              { text: consultationServiceDate + '\n', style: 'value' },
+              { text: 'Location: ', style: 'label' },
+              { text: patientHospital, style: 'value' }
+            ],
+            margin: [0, 10, 0, 20]
           },
           
-          // Provider Information
-          { text: 'Provider Information', style: 'subheader' },
+          // Separator line
+          { text: '_'.repeat(80), style: 'thinSeparator', margin: [0, 0, 0, 20] },
+          
+          // CPT Code Section
+          { text: 'CPT Code:', style: 'sectionHeader' },
           {
-            table: {
-              widths: ['30%', '70%'],
-              body: [
-                ['Provider Name:', providerName + (userProfile && userProfile.title ? ', ' + userProfile.title : '')],
-                ['NPI Number:', providerNPI],
-                ['Specialty:', (userProfile && userProfile.specialty) || 'N/A'],
-                ['Facility:', facilityName],
-                ['Address:', (userProfile && userProfile.address) || 'N/A'],
-                ['Phone:', (userProfile && userProfile.phone) || 'N/A'],
-                ['Service Date:', serviceDate]
-              ]
-            },
-            layout: 'noBorders',
-            margin: [0, 5, 0, 15]
+            text: [
+              { text: cptCode + ' – ', style: 'cptCode' },
+              { text: cptJustification, style: 'justification' }
+            ],
+            margin: [0, 5, 0, 20]
           },
           
-          // ICD-10 Codes
-          { text: 'Diagnosis Codes (ICD-10)', style: 'subheader' },
+          // Separator line
+          { text: '_'.repeat(80), style: 'thinSeparator', margin: [0, 0, 0, 20] },
+          
+          // ICD-10 Diagnosis Codes Section
+          { text: 'ICD-10 Diagnosis Codes:', style: 'sectionHeader' },
           {
-            table: {
-              headerRows: 1,
-              widths: ['20%', '80%'],
-              body: [
-                [{ text: 'Code', style: 'tableHeader' }, { text: 'Description', style: 'tableHeader' }],
-                ...codesForPDF.map(item => [item.code, item.description])
-              ]
-            },
-            margin: [0, 5, 0, 15]
+            ul: codesForPDF.map(item => [
+              { text: item.code + ' – ', style: 'icdCode' },
+              { text: item.description, style: 'icdDescription' }
+            ]),
+            margin: [0, 5, 0, 20]
           },
           
-          // Signature Section
-          { text: '\nProvider Signature', style: 'subheader' },
+          // Separator line
+          { text: '_'.repeat(80), style: 'thinSeparator', margin: [0, 0, 0, 20] },
+          
+          // Provider Information Section (after ICD-10)
+          { text: 'Provider Information:', style: 'sectionHeader' },
           {
-            text: '[Electronic signature on file]',
-            margin: [0, 10, 0, 5],
-            style: 'signature'
+            text: [
+              { text: 'Provider Name: ', style: 'label' },
+              { text: (providerName + (userProfile && userProfile.title ? ', ' + userProfile.title : '')) + '\n', style: 'value' },
+              { text: 'NPI Number: ', style: 'label' },
+              { text: providerNPI + '\n', style: 'value' },
+              { text: 'Specialty: ', style: 'label' },
+              { text: ((userProfile && userProfile.specialty) || 'N/A') + '\n', style: 'value' },
+              { text: 'Facility: ', style: 'label' },
+              { text: facilityName + '\n', style: 'value' },
+              { text: 'Address: ', style: 'label' },
+              { text: ((userProfile && userProfile.address) || 'N/A') + '\n', style: 'value' },
+              { text: 'Phone: ', style: 'label' },
+              { text: ((userProfile && userProfile.phone) || 'N/A'), style: 'value' }
+            ],
+            margin: [0, 5, 0, 20]
           },
+          
+          // Separator line
+          { text: '_'.repeat(80), style: 'thinSeparator', margin: [0, 0, 0, 20] },
+          
+          // Summary of Medical Necessity
+          { text: 'Summary of Medical Necessity:', style: 'sectionHeader' },
           {
-            text: '_'.repeat(50),
-            margin: [0, 0, 0, 5]
+            text: medicalNecessity,
+            style: 'medicalNecessity',
+            margin: [0, 5, 0, 20]
+          },
+          
+          // Separator line
+          { text: '_'.repeat(80), style: 'thinSeparator', margin: [0, 0, 0, 20] },
+          
+          // Provider Signature Section
+          { text: 'Provider Signature:', style: 'sectionHeader' },
+          {
+            text: '\nSignature: _______________________________\n\nDate: _______________________\n',
+            style: 'signatureLines',
+            margin: [0, 10, 0, 10]
           },
           {
             text: providerName + (userProfile && userProfile.title ? ', ' + userProfile.title : ''),
-            fontSize: 12,
-            margin: [0, 0, 0, 10]
-          },
-          
-          { text: '\nGenerated by CodeCraftMD on ' + new Date().toLocaleDateString(), style: 'footer' }
+            style: 'providerNameSignature',
+            margin: [0, 0, 0, 20]
+          }
         ],
         
         styles: {
-          header: {
+          companyName: {
             fontSize: 18,
             bold: true,
-            color: '#1f2937'
-          },
-          subheader: {
-            fontSize: 14,
-            bold: true,
-            margin: [0, 10, 0, 5],
-            color: '#374151'
-          },
-          tableHeader: {
-            bold: true,
-            fontSize: 11,
-            color: 'white',
-            fillColor: '#3b82f6'
-          },
-          footer: {
-            fontSize: 10,
-            italics: true,
-            alignment: 'center',
-            color: '#6b7280'
-          },
-          signature: {
-            fontSize: 12,
-            italics: true,
-            color: '#4b5563'
-          },
-          dateText: {
-            fontSize: 11,
-            color: '#6b7280'
-          },
-          companyName: {
-            fontSize: 20,
-            bold: true,
-            color: '#1D4ED8',
-            font: 'Helvetica'
+            color: '#1D4ED8'
           },
           tagline: {
             fontSize: 10,
             color: '#6b7280',
             italics: true
           },
+          header: {
+            fontSize: 16,
+            bold: true,
+            color: '#1f2937'
+          },
+          dateText: {
+            fontSize: 11,
+            color: '#6b7280'
+          },
           separator: {
-            fontSize: 12,
-            color: '#1D4ED8',
+            fontSize: 10,
+            color: '#3b82f6',
             alignment: 'center'
+          },
+          thinSeparator: {
+            fontSize: 8,
+            color: '#9ca3af',
+            alignment: 'left'
+          },
+          label: {
+            fontSize: 11,
+            bold: true,
+            color: '#374151'
+          },
+          value: {
+            fontSize: 11,
+            color: '#1f2937'
+          },
+          sectionHeader: {
+            fontSize: 13,
+            bold: true,
+            color: '#1f2937',
+            margin: [0, 0, 0, 5]
+          },
+          cptCode: {
+            fontSize: 11,
+            bold: true,
+            color: '#1f2937'
+          },
+          justification: {
+            fontSize: 11,
+            color: '#374151',
+            lineHeight: 1.3
+          },
+          icdCode: {
+            fontSize: 11,
+            bold: true,
+            color: '#1f2937'
+          },
+          icdDescription: {
+            fontSize: 11,
+            color: '#374151'
+          },
+          medicalNecessity: {
+            fontSize: 11,
+            color: '#1f2937',
+            lineHeight: 1.4,
+            alignment: 'justify'
+          },
+          signatureLines: {
+            fontSize: 11,
+            color: '#1f2937',
+            lineHeight: 1.5
+          },
+          providerNameSignature: {
+            fontSize: 11,
+            bold: true,
+            color: '#1f2937'
           }
         }
       };
       
-      // Create professional PDF without problematic logo
+      // Generate and download the PDF
       try {
-        console.log('Creating professional PDF...');
-        
-        const docDefinition = {
-          content: [
-            // Professional Header (TEXT ONLY - no logo)
-            {
-              columns: [
-                {
-                  text: [
-                    { text: 'CodeCraftMD\n', style: 'companyName' },
-                    { text: 'Medical Billing Automation', style: 'tagline' }
-                  ],
-                  width: '60%'
-                },
-                {
-                  text: [
-                    { text: 'BILLING SUMMARY\n', style: 'header' },
-                    { text: new Date().toLocaleDateString(), style: 'dateText' }
-                  ],
-                  alignment: 'right',
-                  width: '40%'
-                }
-              ],
-              margin: [0, 0, 0, 10]
-            },
-            
-            // Professional line separator
-            { text: '━'.repeat(80), style: 'separator', margin: [0, 10, 0, 20] },
-            
-            // Patient Information Table
-            { text: 'Patient Information', style: 'subheader' },
-            {
-              table: {
-                widths: ['30%', '70%'],
-                body: [
-                  ['Name:', patientName],
-                  ['Date of Birth:', patientDOB],
-                  ['Patient ID:', patientID],
-                  ['Hospital/Facility:', patientHospital],
-                  ['Gender:', patientGender]
-                ]
-              },
-              layout: 'noBorders',
-              margin: [0, 5, 0, 15]
-            },
-            
-            // Provider Information Table
-            { text: 'Provider Information', style: 'subheader' },
-            {
-              table: {
-                widths: ['30%', '70%'],
-                body: [
-                  ['Provider Name:', providerName + (userProfile && userProfile.title ? ', ' + userProfile.title : '')],
-                  ['NPI Number:', providerNPI],
-                  ['Specialty:', (userProfile && userProfile.specialty) || 'N/A'],
-                  ['Facility:', facilityName],
-                  ['Address:', (userProfile && userProfile.address) || 'N/A'],
-                  ['Phone:', (userProfile && userProfile.phone) || 'N/A'],
-                  ['Service Date:', serviceDate]
-                ]
-              },
-              layout: 'noBorders',
-              margin: [0, 5, 0, 15]
-            },
-            
-            // ICD-10 Codes Table
-            { text: 'Diagnosis Codes (ICD-10)', style: 'subheader' },
-            {
-              table: {
-                headerRows: 1,
-                widths: ['20%', '80%'],
-                body: [
-                  [{ text: 'Code', style: 'tableHeader' }, { text: 'Description', style: 'tableHeader' }],
-                  ...codesForPDF.map(item => [item.code, item.description])
-                ]
-              },
-              margin: [0, 5, 0, 15]
-            },
-            
-            // Signature Section
-            { text: '\nProvider Signature', style: 'subheader' },
-            {
-              text: '[Electronic signature on file]',
-              margin: [0, 10, 0, 5],
-              style: 'signature'
-            },
-            {
-              text: '_'.repeat(50),
-              margin: [0, 0, 0, 5]
-            },
-            {
-              text: providerName + (userProfile && userProfile.title ? ', ' + userProfile.title : ''),
-              fontSize: 12,
-              margin: [0, 0, 0, 10]
-            },
-            
-            { text: '\nGenerated by CodeCraftMD on ' + new Date().toLocaleDateString(), style: 'footer' }
-          ],
-          
-          styles: {
-            header: {
-              fontSize: 18,
-              bold: true,
-              color: '#1f2937'
-            },
-            subheader: {
-              fontSize: 14,
-              bold: true,
-              margin: [0, 10, 0, 5],
-              color: '#374151'
-            },
-            tableHeader: {
-              bold: true,
-              fontSize: 11,
-              color: 'white',
-              fillColor: '#3b82f6'
-            },
-            footer: {
-              fontSize: 10,
-              italics: true,
-              alignment: 'center',
-              color: '#6b7280'
-            },
-            signature: {
-              fontSize: 12,
-              italics: true,
-              color: '#4b5563'
-            },
-            dateText: {
-              fontSize: 11,
-              color: '#6b7280'
-            },
-            companyName: {
-              fontSize: 20,
-              bold: true,
-              color: '#1D4ED8'
-            },
-            tagline: {
-              fontSize: 10,
-              color: '#6b7280',
-              italics: true
-            },
-            separator: {
-              fontSize: 12,
-              color: '#1D4ED8',
-              alignment: 'center'
-            }
-          }
-        };
-        
+        console.log('Creating professional PDF with enhanced billing data...');
         console.log('Professional PDF docDefinition:', docDefinition);
         const pdfDoc = pdfMake.createPdf(docDefinition);
         console.log('Professional PDF document object created:', pdfDoc);
@@ -1452,6 +1459,8 @@
           facility: document.getElementById('facilityName').value,
           serviceDate: document.getElementById('serviceDate').value
         },
+        // Save enhanced billing data if available
+        enhancedBillingData: window.enhancedBillingData || null,
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         status: 'draft'
       };
@@ -1652,13 +1661,42 @@
         const providerName = data.providerInfo?.name || 'N/A';
         const providerNPI = data.providerInfo?.npi || 'N/A';
         const facilityName = data.providerInfo?.facility || 'N/A';
-        const serviceDate = data.providerInfo?.serviceDate || 'N/A';
-        const codesForPDF = data.extractedCodes || [{ code: 'No codes', description: 'No ICD-10 codes found' }];
+        const serviceDate = data.providerInfo?.serviceDate || new Date().toISOString().split('T')[0];
+        
+        // Use enhanced billing data if available, otherwise fallback to basic format
+        const billingData = data.enhancedBillingData;
+        let cptCode = '99213';
+        let cptJustification = 'Office visit for established patient with moderate complexity medical decision making.';
+        let medicalNecessity = 'Standard medical consultation with ICD-10 code extraction and billing documentation.';
+        let codesForPDF = data.extractedCodes || [{ code: 'No codes', description: 'No ICD-10 codes found' }];
+        let extractedServiceDate = null;
+        
+        if (billingData) {
+          cptCode = billingData.cpt_code || cptCode;
+          cptJustification = billingData.cpt_justification || cptJustification;
+          medicalNecessity = billingData.medical_necessity || medicalNecessity;
+          codesForPDF = billingData.icd10_codes || codesForPDF;
+          
+          // Try to extract service date from AI analysis
+          if (billingData.patient_summary && billingData.patient_summary.service_date) {
+            extractedServiceDate = billingData.patient_summary.service_date;
+          }
+        }
+        
+        // Use extracted date if available, otherwise form date, otherwise blank for manual entry
+        let consultationServiceDate;
+        if (extractedServiceDate) {
+          consultationServiceDate = extractedServiceDate;
+        } else if (serviceDate && serviceDate !== new Date().toISOString().split('T')[0]) {
+          consultationServiceDate = serviceDate;
+        } else {
+          consultationServiceDate = '____________________'; // Blank line for manual entry
+        }
         
         // Generate PDF with same structure as main generatePDF function
         const docDefinition = {
           content: [
-            // Professional Header (TEXT ONLY - no logo)
+            // Professional Header
             {
               columns: [
                 {
@@ -1677,92 +1715,186 @@
                   width: '40%'
                 }
               ],
-              margin: [0, 0, 0, 10]
+              margin: [0, 0, 0, 20]
             },
             
-            // Professional line separator
-            { text: '━'.repeat(80), style: 'separator', margin: [0, 10, 0, 20] },
+            // Professional separator line
+            { text: '_'.repeat(80), style: 'separator', margin: [0, 0, 0, 20] },
             
-            // Patient Information Table
-            { text: 'Patient Information', style: 'subheader' },
+            // Patient Information (inline format)
             {
-              table: {
-                widths: ['30%', '70%'],
-                body: [
-                  ['Name:', patientName],
-                  ['Date of Birth:', patientDOB],
-                  ['Patient ID:', patientID],
-                  ['Hospital/Facility:', patientHospital],
-                  ['Gender:', patientGender]
-                ]
-              },
-              layout: 'noBorders',
-              margin: [0, 5, 0, 15]
+              text: [
+                { text: 'Patient Name: ', style: 'label' },
+                { text: patientName + '\n', style: 'value' },
+                { text: 'DOB: ', style: 'label' },
+                { text: patientDOB + '\n', style: 'value' },
+                { text: 'MRN: ', style: 'label' },
+                { text: patientID + '\n', style: 'value' },
+                { text: 'Date of Service: ', style: 'label' },
+                { text: consultationServiceDate + '\n', style: 'value' },
+                { text: 'Location: ', style: 'label' },
+                { text: patientHospital, style: 'value' }
+              ],
+              margin: [0, 10, 0, 20]
             },
             
-            // Provider Information Table
-            { text: 'Provider Information', style: 'subheader' },
+            // Separator line
+            { text: '_'.repeat(80), style: 'thinSeparator', margin: [0, 0, 0, 20] },
+            
+            // CPT Code Section
+            { text: 'CPT Code:', style: 'sectionHeader' },
             {
-              table: {
-                widths: ['30%', '70%'],
-                body: [
-                  ['Provider Name:', providerName + (userProfile && userProfile.title ? ', ' + userProfile.title : '')],
-                  ['NPI Number:', providerNPI],
-                  ['Specialty:', (userProfile && userProfile.specialty) || 'N/A'],
-                  ['Facility:', facilityName],
-                  ['Address:', (userProfile && userProfile.address) || 'N/A'],
-                  ['Phone:', (userProfile && userProfile.phone) || 'N/A'],
-                  ['Service Date:', serviceDate]
-                ]
-              },
-              layout: 'noBorders',
-              margin: [0, 5, 0, 15]
+              text: [
+                { text: cptCode + ' – ', style: 'cptCode' },
+                { text: cptJustification, style: 'justification' }
+              ],
+              margin: [0, 5, 0, 20]
             },
             
-            // ICD-10 Codes Table
-            { text: 'Diagnosis Codes (ICD-10)', style: 'subheader' },
+            // Separator line
+            { text: '_'.repeat(80), style: 'thinSeparator', margin: [0, 0, 0, 20] },
+            
+            // ICD-10 Diagnosis Codes Section
+            { text: 'ICD-10 Diagnosis Codes:', style: 'sectionHeader' },
             {
-              table: {
-                headerRows: 1,
-                widths: ['20%', '80%'],
-                body: [
-                  [{ text: 'Code', style: 'tableHeader' }, { text: 'Description', style: 'tableHeader' }],
-                  ...codesForPDF.map(item => [item.code, item.description])
-                ]
-              },
-              margin: [0, 5, 0, 15]
+              ul: codesForPDF.map(item => [
+                { text: item.code + ' – ', style: 'icdCode' },
+                { text: item.description, style: 'icdDescription' }
+              ]),
+              margin: [0, 5, 0, 20]
             },
             
-            // Signature Section
-            { text: '\nProvider Signature', style: 'subheader' },
+            // Separator line
+            { text: '_'.repeat(80), style: 'thinSeparator', margin: [0, 0, 0, 20] },
+            
+            // Provider Information Section (after ICD-10)
+            { text: 'Provider Information:', style: 'sectionHeader' },
             {
-              text: '[Electronic signature on file]',
-              margin: [0, 10, 0, 5],
-              style: 'signature'
+              text: [
+                { text: 'Provider Name: ', style: 'label' },
+                { text: (providerName + (userProfile && userProfile.title ? ', ' + userProfile.title : '')) + '\n', style: 'value' },
+                { text: 'NPI Number: ', style: 'label' },
+                { text: providerNPI + '\n', style: 'value' },
+                { text: 'Specialty: ', style: 'label' },
+                { text: ((userProfile && userProfile.specialty) || 'N/A') + '\n', style: 'value' },
+                { text: 'Facility: ', style: 'label' },
+                { text: facilityName + '\n', style: 'value' },
+                { text: 'Address: ', style: 'label' },
+                { text: ((userProfile && userProfile.address) || 'N/A') + '\n', style: 'value' },
+                { text: 'Phone: ', style: 'label' },
+                { text: ((userProfile && userProfile.phone) || 'N/A'), style: 'value' }
+              ],
+              margin: [0, 5, 0, 20]
             },
+            
+            // Separator line
+            { text: '_'.repeat(80), style: 'thinSeparator', margin: [0, 0, 0, 20] },
+            
+            // Summary of Medical Necessity
+            { text: 'Summary of Medical Necessity:', style: 'sectionHeader' },
             {
-              text: '_'.repeat(50),
-              margin: [0, 0, 0, 5]
+              text: medicalNecessity,
+              style: 'medicalNecessity',
+              margin: [0, 5, 0, 20]
+            },
+            
+            // Separator line
+            { text: '_'.repeat(80), style: 'thinSeparator', margin: [0, 0, 0, 20] },
+            
+            // Provider Signature Section
+            { text: 'Provider Signature:', style: 'sectionHeader' },
+            {
+              text: '\nSignature: _______________________________\n\nDate: _______________________\n',
+              style: 'signatureLines',
+              margin: [0, 10, 0, 10]
             },
             {
               text: providerName + (userProfile && userProfile.title ? ', ' + userProfile.title : ''),
-              fontSize: 12,
-              margin: [0, 0, 0, 10]
-            },
-            
-            { text: '\nGenerated by CodeCraftMD on ' + new Date().toLocaleDateString(), style: 'footer' }
+              style: 'providerNameSignature',
+              margin: [0, 0, 0, 20]
+            }
           ],
           
           styles: {
-            header: { fontSize: 18, bold: true, color: '#1f2937' },
-            subheader: { fontSize: 14, bold: true, margin: [0, 10, 0, 5], color: '#374151' },
-            tableHeader: { bold: true, fontSize: 11, color: 'white', fillColor: '#3b82f6' },
-            footer: { fontSize: 10, italics: true, alignment: 'center', color: '#6b7280' },
-            signature: { fontSize: 12, italics: true, color: '#4b5563' },
-            dateText: { fontSize: 11, color: '#6b7280' },
-            companyName: { fontSize: 20, bold: true, color: '#1D4ED8' },
-            tagline: { fontSize: 10, color: '#6b7280', italics: true },
-            separator: { fontSize: 12, color: '#1D4ED8', alignment: 'center' }
+            companyName: {
+              fontSize: 18,
+              bold: true,
+              color: '#1D4ED8'
+            },
+            tagline: {
+              fontSize: 10,
+              color: '#6b7280',
+              italics: true
+            },
+            header: {
+              fontSize: 16,
+              bold: true,
+              color: '#1f2937'
+            },
+            dateText: {
+              fontSize: 11,
+              color: '#6b7280'
+            },
+            separator: {
+              fontSize: 10,
+              color: '#3b82f6',
+              alignment: 'center'
+            },
+            thinSeparator: {
+              fontSize: 8,
+              color: '#9ca3af',
+              alignment: 'left'
+            },
+            label: {
+              fontSize: 11,
+              bold: true,
+              color: '#374151'
+            },
+            value: {
+              fontSize: 11,
+              color: '#1f2937'
+            },
+            sectionHeader: {
+              fontSize: 13,
+              bold: true,
+              color: '#1f2937',
+              margin: [0, 0, 0, 5]
+            },
+            cptCode: {
+              fontSize: 11,
+              bold: true,
+              color: '#1f2937'
+            },
+            justification: {
+              fontSize: 11,
+              color: '#374151',
+              lineHeight: 1.3
+            },
+            icdCode: {
+              fontSize: 11,
+              bold: true,
+              color: '#1f2937'
+            },
+            icdDescription: {
+              fontSize: 11,
+              color: '#374151'
+            },
+            medicalNecessity: {
+              fontSize: 11,
+              color: '#1f2937',
+              lineHeight: 1.4,
+              alignment: 'justify'
+            },
+            signatureLines: {
+              fontSize: 11,
+              color: '#1f2937',
+              lineHeight: 1.5
+            },
+            providerNameSignature: {
+              fontSize: 11,
+              bold: true,
+              color: '#1f2937'
+            }
           }
         };
         
@@ -2198,6 +2330,113 @@
         showError('Error updating subscription status');
       }
     }
+    
+    // Campaign Tracking Functions
+    async function loadCampaignData() {
+      if (!currentUser) return;
+      
+      // Check if user is admin (you can customize this logic)
+      const userEmail = currentUser.email;
+      const isAdmin = userEmail === 'admin@codecraftmd.com' || userEmail === 'onyeiulonu@gmail.com'; // Replace with your admin email
+      
+      if (!isAdmin) {
+        // Hide campaign section for non-admin users
+        document.getElementById('campaignSection').classList.add('hidden');
+        return;
+      }
+      
+      // Show campaign section for admins
+      document.getElementById('campaignSection').classList.remove('hidden');
+      
+      try {
+        const leadsSnapshot = await db.collection('outreach_leads')
+          .orderBy('timestamp', 'desc')
+          .limit(50)
+          .get();
+        
+        const leads = [];
+        leadsSnapshot.forEach(doc => {
+          leads.push({ id: doc.id, ...doc.data() });
+        });
+        
+        // Calculate statistics
+        const totalVisits = leads.filter(l => l.status === 'visited').length;
+        const totalSignups = leads.filter(l => l.status === 'signed-up').length;
+        const conversionRate = totalVisits > 0 ? ((totalSignups / totalVisits) * 100).toFixed(1) : 0;
+        const campaigns = new Set(leads.map(l => l.campaign));
+        
+        // Update stats display
+        document.getElementById('totalVisits').textContent = totalVisits;
+        document.getElementById('totalSignups').textContent = totalSignups;
+        document.getElementById('conversionRate').textContent = conversionRate + '%';
+        document.getElementById('activeCampaigns').textContent = campaigns.size;
+        
+        // Display leads
+        displayCampaignLeads(leads);
+        
+      } catch (error) {
+        console.error('Error loading campaign data:', error);
+        showError('Error loading campaign data');
+      }
+    }
+    
+    function displayCampaignLeads(leads) {
+      const container = document.getElementById('campaignLeads');
+      
+      if (leads.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-8">
+            <div class="text-gray-400 text-4xl mb-2">📧</div>
+            <p class="text-gray-500 text-sm">No campaign leads yet</p>
+          </div>
+        `;
+        return;
+      }
+      
+      const html = leads.map(lead => {
+        const timestamp = lead.timestamp?.toDate ? lead.timestamp.toDate().toLocaleString() : 'N/A';
+        const statusBadge = lead.status === 'signed-up' 
+          ? '<span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">Signed Up</span>'
+          : '<span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">Visited</span>';
+        
+        return `
+          <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+            <div class="flex justify-between items-start">
+              <div class="flex-1">
+                <div class="flex items-center space-x-2 mb-2">
+                  <span class="font-medium text-gray-900">Campaign: ${lead.campaign}</span>
+                  ${statusBadge}
+                </div>
+                ${lead.email ? `<div class="text-sm text-gray-600">📧 ${lead.email}</div>` : ''}
+                ${lead.name ? `<div class="text-sm text-gray-600">👤 ${lead.name}</div>` : ''}
+                ${lead.phone ? `<div class="text-sm text-gray-600">📱 ${lead.phone}</div>` : ''}
+                ${lead.offerCode ? `<div class="text-sm text-gray-500 font-mono mt-1">Code: ${lead.offerCode}</div>` : ''}
+              </div>
+              <div class="text-xs text-gray-400 text-right">
+                ${timestamp}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+      
+      container.innerHTML = html;
+    }
+    
+    // Add event listener for campaign refresh button
+    document.addEventListener('DOMContentLoaded', function() {
+      const refreshBtn = document.getElementById('refreshCampaignsBtn');
+      if (refreshBtn) {
+        refreshBtn.addEventListener('click', loadCampaignData);
+      }
+      
+      // Load campaign data when user is authenticated
+      auth.onAuthStateChanged((user) => {
+        if (user) {
+          setTimeout(() => loadCampaignData(), 1000);
+        }
+      });
+    });
   </script>
 
 </body>

@@ -44,6 +44,13 @@ service cloud.firestore {
       allow read, update, delete: if false;
     }
     
+    // Outreach leads - allow server-side writes, admin reads only
+    match /outreach_leads/{leadId} {
+      // Only allow creation from server (via Admin SDK)
+      allow read: if request.auth != null && request.auth.token.admin == true;
+      allow write: if false; // Only server can write via Admin SDK
+    }
+    
     // Default: deny all other access
     match /{document=**} {
       allow read, write: if false;
