@@ -11,6 +11,10 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192x192.png">
   <script src="https://cdn.tailwindcss.com"></script>
   
+  <!-- Calendly Integration -->
+  <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
+  <script src="https://assets.calendly.com/assets/external/widget.js" type="text/javascript" async></script>
+  
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://codecraftmd.com/knowledge-hub/">
@@ -180,12 +184,14 @@
             </div>
           </div>
 
-          <!-- Newsletter Signup -->
+          <!-- Connect CTA -->
           <div class="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-lg">
-            <h4 class="font-semibold text-gray-900 mb-2">Stay Updated</h4>
-            <p class="text-sm text-gray-600 mb-3">Get the latest insights delivered to your inbox.</p>
-            <input type="email" placeholder="Your email" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg mb-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-            <button class="w-full bg-blue-600 text-white text-sm font-medium py-2 rounded-lg hover:bg-blue-700 transition">Subscribe</button>
+            <h4 class="font-semibold text-gray-900 mb-2">Let's Connect</h4>
+            <p class="text-sm text-gray-600 mb-3">Have questions? Reach out directly.</p>
+            <div class="space-y-2">
+              <a href="" onclick="Calendly.initPopupWidget({url: 'https://calendly.com/codecraftmd-info/30min'});return false;" class="block w-full bg-blue-600 text-white text-sm font-medium py-2 rounded-lg hover:bg-blue-700 transition text-center">Schedule Demo</a>
+              <a href="/dashboard.html" class="block w-full bg-gray-200 text-gray-700 text-sm font-medium py-2 rounded-lg hover:bg-gray-300 transition text-center">Create Account</a>
+            </div>
           </div>
         </div>
       </aside>
@@ -436,9 +442,33 @@
     </div>
   </footer>
 
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-functions-compat.js"></script>
+
+  <!-- Firebase Configuration -->
+  <script>
+    console.log('Firebase config script starting...');
+    const firebaseConfig = {
+      apiKey: "AIzaSyDxAdkFfUtpZzgZkEwN0389fh7Bak3oe4E",
+      authDomain: "codecraftmd-e48b0.firebaseapp.com",
+      projectId: "codecraftmd-e48b0",
+      storageBucket: "codecraftmd-e48b0.appspot.com",
+      messagingSenderId: "410377358686",
+      appId: "1:410377358686:web:ba8f33b03827281e5993cf"
+    };
+    firebase.initializeApp(firebaseConfig);
+    
+  </script>
+
+
   <!-- JavaScript for Search and Filtering -->
   <script>
+    console.log('Script loaded, waiting for DOMContentLoaded');
     document.addEventListener('DOMContentLoaded', function() {
+      console.log('DOMContentLoaded fired!');
       const searchInput = document.getElementById('searchInput');
       const articles = document.querySelectorAll('.article-card');
       const categoryButtons = document.querySelectorAll('.category-filter');
@@ -543,7 +573,8 @@
           highlight.outerHTML = highlight.innerHTML;
         });
       }
+      
     });
-  </script>
+    </script>
 </body>
 </html>
