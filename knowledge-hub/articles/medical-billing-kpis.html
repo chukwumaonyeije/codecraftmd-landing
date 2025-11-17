@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>10 Medical Billing KPIs Every Practice Should Track | CodeCraftMD</title>
+  <meta name="description" content="Essential KPIs and metrics healthcare practices should monitor to optimize revenue cycle, identify bottlenecks, and improve billing performance.">
+  <meta name="keywords" content="medical billing KPIs, revenue cycle metrics, healthcare benchmarks, billing performance">
+  <meta name="author" content="Dr. Chukwuma Onyeije">
+  <meta name="theme-color" content="#1D4ED8">
+  <link rel="canonical" href="https://codecraftmd.com/knowledge-hub/articles/medical-billing-kpis.html">
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <style>
+    .reading-progress { position: fixed; top: 0; left: 0; width: 0%; height: 3px; background: #1D4ED8; z-index: 9999; }
+    .table-of-contents { background: #f8fafc; border-left: 4px solid #1D4ED8; }
+    .kpi-card { background: white; border: 2px solid #e5e7eb; transition: all 0.2s; }
+    .kpi-card:hover { border-color: #3b82f6; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1); }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+  <div class="reading-progress" id="reading-progress"></div>
+
+  <header class="bg-white shadow-md sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+      <div class="flex items-center">
+        <a href="/" class="flex items-center">
+          <svg class="w-8 h-8 mr-3" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="32" height="32" rx="6" fill="#1D4ED8"/><rect x="14" y="6" width="4" height="20" fill="white" rx="1"/><rect x="6" y="14" width="20" height="4" fill="white" rx="1"/><path d="M10 10L8 12L10 14" stroke="#60A5FA" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 10L24 12L22 14" stroke="#60A5FA" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="text-xl font-bold text-blue-700">CodeCraftMD</span>
+        </a>
+      </div>
+      <nav class="flex items-center space-x-4">
+        <a href="../index.html" class="text-sm font-medium text-gray-600 hover:text-blue-600 transition">← Knowledge Hub</a>
+        <a href="/dashboard.html" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm font-medium transition">Try Platform</a>
+      </nav>
+    </div>
+  </header>
+
+  <nav class="bg-white border-b">
+    <div class="max-w-4xl mx-auto px-6 py-2">
+      <ol class="flex items-center space-x-2 text-sm text-gray-500">
+        <li><a href="/" class="hover:text-blue-600">Home</a></li>
+        <li><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg></li>
+        <li><a href="../index.html" class="hover:text-blue-600">Knowledge Hub</a></li>
+        <li><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg></li>
+        <li class="text-gray-900 font-medium">Billing KPIs</li>
+      </ol>
+    </div>
+  </nav>
+
+  <article class="max-w-4xl mx-auto px-6 py-12">
+    <header class="mb-12">
+      <div class="text-center mb-8">
+        <div class="flex items-center justify-center space-x-4 mb-4">
+          <span class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm font-medium">Best Practices</span>
+          <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">Metrics</span>
+        </div>
+        <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">
+          10 Medical Billing KPIs Every Practice Should Track
+        </h1>
+        <p class="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+          Monitor these essential metrics to optimize your revenue cycle, identify bottlenecks, and improve overall billing performance.
+        </p>
+      </div>
+      
+      <div class="flex items-center justify-between border-t border-b border-gray-200 py-6">
+        <div class="flex items-center space-x-4">
+          <img src="../images/dr-chukwuma-onyeije.jpg" alt="Dr. Chukwuma Onyeije" class="w-12 h-12 rounded-full">
+          <div>
+            <h3 class="font-semibold text-gray-900">Dr. Chukwuma Onyeije</h3>
+            <p class="text-sm text-gray-500">Founder, CodeCraftMD</p>
+          </div>
+        </div>
+        <div class="text-right">
+          <p class="text-sm text-gray-600">October 18, 2024</p>
+          <p class="text-sm text-gray-500">7 min read</p>
+        </div>
+      </div>
+    </header>
+
+    <div class="table-of-contents p-6 rounded-lg mb-12">
+      <h3 class="font-semibold text-gray-900 mb-4">10 Essential KPIs</h3>
+      <ul class="space-y-2 text-sm">
+        <li><a href="#kpi1" class="text-blue-600 hover:text-blue-800">1. Days Sales Outstanding (DSO)</a></li>
+        <li><a href="#kpi2" class="text-blue-600 hover:text-blue-800">2. Claim Denial Rate</a></li>
+        <li><a href="#kpi3" class="text-blue-600 hover:text-blue-800">3. First-Pass Claim Acceptance Rate</a></li>
+        <li><a href="#kpi4" class="text-blue-600 hover:text-blue-800">4. Accounts Receivable Aging</a></li>
+        <li><a href="#kpi5" class="text-blue-600 hover:text-blue-800">5. Clean Claim Rate</a></li>
+        <li><a href="#kpi6" class="text-blue-600 hover:text-blue-800">6. Net Collection Rate</a></li>
+        <li><a href="#kpi7" class="text-blue-600 hover:text-blue-800">7. Cost Per Claim</a></li>
+        <li><a href="#kpi8" class="text-blue-600 hover:text-blue-800">8. Claim Processing Time</a></li>
+        <li><a href="#kpi9" class="text-blue-600 hover:text-blue-800">9. Bad Debt Ratio</a></li>
+        <li><a href="#kpi10" class="text-blue-600 hover:text-blue-800">10. Revenue Capture Rate</a></li>
+        <li><a href="#dashboard" class="text-blue-600 hover:text-blue-800">Creating Your Dashboard</a></li>
+      </ul>
+    </div>
+
+    <div class="prose prose-lg max-w-none">
+      <p class="text-lg text-gray-700 leading-relaxed mb-8">
+        Effective billing management requires tracking the right metrics. These 10 KPIs give you visibility into your revenue cycle health and highlight areas for improvement.
+      </p>
+
+      <div class="grid md:grid-cols-2 gap-6 mb-12">
+        <div class="kpi-card p-6 rounded-xl">
+          <div id="kpi1">
+            <h3 class="font-semibold text-gray-900 mb-2">1. Days Sales Outstanding (DSO)</h3>
+            <p class="text-sm text-gray-700 mb-2"><span class="font-semibold">What it measures:</span> Average days to collect payment after service</p>
+            <p class="text-sm text-gray-700 mb-2"><span class="font-semibold">Formula:</span> (Average AR / Daily Charges) × Days in Period</p>
+            <p class="text-sm text-gray-700"><span class="font-semibold">Target:</span> < 45 days (Industry average: 45-60 days)</p>
+          </div>
+        </div>
+
+        <div class="kpi-card p-6 rounded-xl">
+          <div id="kpi2">
+            <h3 class="font-semibold text-gray-900 mb-2">2. Claim Denial Rate</h3>
+            <p class="text-sm text-gray-700 mb-2"><span class="font-semibold">What it measures:</span> % of claims rejected by payers</p>
+            <p class="text-sm text-gray-700 mb-2"><span class="font-semibold">Formula:</span> (Denied Claims / Total Claims Submitted) × 100</p>
+            <p class="text-sm text-gray-700"><span class="font-semibold">Target:</span> < 5% (Above 10% indicates serious issues)</p>
+          </div>
+        </div>
+
+        <div class="kpi-card p-6 rounded-xl">
+          <div id="kpi3">
+            <h3 class="font-semibold text-gray-900 mb-2">3. First-Pass Claim Acceptance Rate</h3>
+            <p class="text-sm text-gray-700 mb-2"><span class="font-semibold">What it measures:</span> % of claims paid on first submission</p>
+            <p class="text-sm text-gray-700 mb-2"><span class="font-semibold">Formula:</span> (Claims Approved First Submission / Total Claims) × 100</p>
+            <p class="text-sm text-gray-700"><span class="font-semibold">Target:</span> > 90% (Benchmark: 90-95%)</p>
+          </div>
+        </div>
+
+        <div class="kpi-card p-6 rounded-xl">
+          <div id="kpi4">
+            <h3 class="font-semibold text-gray-900 mb-2">4. Accounts Receivable (AR) Aging</h3>
+            <p class="text-sm text-gray-700 mb-2"><span class="font-semibold">What it measures:</span> Distribution of outstanding AR by age</p>
+            <p class="text-sm text-gray-700 mb-2"><span class="font-semibold">Breakdown:</span> 0-30 days, 31-60 days, 61-90 days, 90+ days</p>
+            <p class="text-sm text-gray-700"><span class="font-semibold">Target:</span> 80%+ collected within 90 days</p>
+          </div>
+        </div>
+
+        <div class="kpi-card p-6 rounded-xl">
+          <div id="kpi5">
+            <h3 class="font-semibold text-gray-900 mb-2">5. Clean Claim Rate</h3>
+            <p class="text-sm text-gray-700 mb-2"><span class="font-semibold">What it measures:</span> % of claims with no errors or omissions</p>
+            <p class="text-sm text-gray-700 mb-2"><span class="font-semibold">Formula:</span> (Claims Accepted Without Adjustment / Total Claims) × 100</p>
+            <p class="text-sm text-gray-700"><span class="font-semibold">Target:</span> > 95% (Industry best practice)</span></p>
+          </div>
+        </div>
+
+        <div class="kpi-card p-6 rounded-xl">
+          <div id="kpi6">
+            <h3 class="font-semibold text-gray-900 mb-2">6. Net Collection Rate</h3>
+            <p class="text-sm text-gray-700 mb-2"><span class="font-semibold">What it measures:</span> % of billable charges actually collected</p>
+            <p class="text-sm text-gray-700 mb-2"><span class="font-semibold">Formula:</span> (Payments Received / Total Charges) × 100</p>
+            <p class="text-sm text-gray-700"><span class="font-semibold">Target:</span> > 92% (Benchmark: 92-98%)</p>
+          </div>
+        </div>
+
+        <div class="kpi-card p-6 rounded-xl">
+          <div id="kpi7">
+            <h3 class="font-semibold text-gray-900 mb-2">7. Cost Per Claim</h3>
+            <p class="text-sm text-gray-700 mb-2"><span class="font-semibold">What it measures:</span> Administrative cost to process one claim</p>
+            <p class="text-sm text-gray-700 mb-2"><span class="font-semibold">Formula:</span> Total Billing Department Costs / Total Claims Submitted</p>
+            <p class="text-sm text-gray-700"><span class="font-semibold">Target:</span> < $2.50 per claim (Lower is better)</p>
+          </div>
+        </div>
+
+        <div class="kpi-card p-6 rounded-xl">
+          <div id="kpi8">
+            <h3 class="font-semibold text-gray-900 mb-2">8. Claim Processing Time</h3>
+            <p class="text-sm text-gray-700 mb-2"><span class="font-semibold">What it measures:</span> Days from service to claim submission</p>
+            <p class="text-sm text-gray-700 mb-2"><span class="font-semibold">Components:</span> Scheduling → Documentation → Coding → Billing → Submission</p>
+            <p class="text-sm text-gray-700"><span class="font-semibold">Target:</span> < 5 days (Industry standard: 3-5 days)</p>
+          </div>
+        </div>
+
+        <div class="kpi-card p-6 rounded-xl">
+          <div id="kpi9">
+            <h3 class="font-semibold text-gray-900 mb-2">9. Bad Debt Ratio</h3>
+            <p class="text-sm text-gray-700 mb-2"><span class="font-semibold">What it measures:</span> % of charges that become uncollectible</p>
+            <p class="text-sm text-gray-700 mb-2"><span class="font-semibold">Formula:</span> (Bad Debt Write-Offs / Gross Charges) × 100</p>
+            <p class="text-sm text-gray-700"><span class="font-semibold">Target:</span> < 2% (Benchmark: 1-3%)</p>
+          </div>
+        </div>
+
+        <div class="kpi-card p-6 rounded-xl">
+          <div id="kpi10">
+            <h3 class="font-semibold text-gray-900 mb-2">10. Revenue Capture Rate</h3>
+            <p class="text-sm text-gray-700 mb-2"><span class="font-semibold">What it measures:</span> % of billable charges that are actually billed</p>
+            <p class="text-sm text-gray-700 mb-2"><span class="font-semibold">Formula:</span> (Charges Billed / Total Billable Charges) × 100</p>
+            <p class="text-sm text-gray-700"><span class="font-semibold">Target:</span> > 99% (Track to prevent lost revenue)</p>
+          </div>
+        </div>
+      </div>
+
+      <section id="dashboard" class="mb-12">
+        <h2 class="text-3xl font-bold text-gray-900 mb-6">Creating Your KPI Dashboard</h2>
+        
+        <div class="bg-blue-50 p-6 rounded-xl border mb-6">
+          <h3 class="font-semibold text-gray-900 mb-4">Recommended Tracking Frequency</h3>
+          <div class="space-y-3 text-gray-700">
+            <p><span class="font-semibold">Daily:</span> Claims submitted, denials received, cash receipts</p>
+            <p><span class="font-semibold">Weekly:</span> DSO trend, denial rate, claim processing time</p>
+            <p><span class="font-semibold">Monthly:</span> All 10 KPIs, AR aging, financial analysis</p>
+            <p><span class="font-semibold">Quarterly:</span> Trend analysis, benchmarking, process improvements</p>
+          </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl shadow-sm border">
+          <h3 class="font-semibold text-gray-900 mb-4">Implementation Tips</h3>
+          <ul class="space-y-3 text-gray-700">
+            <li class="flex items-start">
+              <span class="text-blue-600 mr-3">✓</span>
+              <span><span class="font-semibold">Establish baselines</span> for all KPIs before making changes</span>
+            </li>
+            <li class="flex items-start">
+              <span class="text-blue-600 mr-3">✓</span>
+              <span><span class="font-semibold">Set realistic targets</span> based on your practice type and specialty</span>
+            </li>
+            <li class="flex items-start">
+              <span class="text-blue-600 mr-3">✓</span>
+              <span><span class="font-semibold">Automate reporting</span> to reduce manual effort and errors</span>
+            </li>
+            <li class="flex items-start">
+              <span class="text-blue-600 mr-3">✓</span>
+              <span><span class="font-semibold">Review regularly</span> with your billing team and leadership</span>
+            </li>
+            <li class="flex items-start">
+              <span class="text-blue-600 mr-3">✓</span>
+              <span><span class="font-semibold">Link to action items</span> when metrics deviate from targets</span>
+            </li>
+          </ul>
+        </div>
+      </section>
+    </div>
+
+    <nav class="border-t border-gray-200 pt-8">
+      <div class="flex justify-between items-center">
+        <a href="../index.html" class="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium">
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+          Back to Knowledge Hub
+        </a>
+      </div>
+    </nav>
+  </article>
+
+  <script>
+    window.addEventListener('scroll', function() {
+      const scrolled = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+      document.getElementById('reading-progress').style.width = scrolled + '%';
+    });
+  </script>
+</body>
+</html>

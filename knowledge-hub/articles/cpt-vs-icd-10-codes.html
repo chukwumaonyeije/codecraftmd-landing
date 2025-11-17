@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CPT vs ICD-10 Codes: Understanding the Difference | CodeCraftMD</title>
+  <meta name="description" content="Complete guide to understanding CPT (procedure) codes vs ICD-10 (diagnosis) codes. Learn how they work together in medical billing.">
+  <meta name="keywords" content="CPT codes, ICD-10 codes, procedure codes, diagnosis codes, medical billing">
+  <meta name="author" content="Dr. Chukwuma Onyeije">
+  <meta name="theme-color" content="#1D4ED8">
+  <link rel="canonical" href="https://codecraftmd.com/knowledge-hub/articles/cpt-vs-icd-10-codes.html">
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <style>
+    .reading-progress { position: fixed; top: 0; left: 0; width: 0%; height: 3px; background: #1D4ED8; z-index: 9999; transition: width 0.1s ease; }
+    .table-of-contents { background: #f8fafc; border-left: 4px solid #1D4ED8; }
+    .comparison-table { border-collapse: collapse; width: 100%; }
+    .comparison-table td { padding: 12px; border: 1px solid #e2e8f0; }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+  <div class="reading-progress" id="reading-progress"></div>
+
+  <header class="bg-white shadow-md sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+      <div class="flex items-center">
+        <a href="/" class="flex items-center">
+          <svg class="w-8 h-8 mr-3" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="32" height="32" rx="6" fill="#1D4ED8"/><rect x="14" y="6" width="4" height="20" fill="white" rx="1"/><rect x="6" y="14" width="20" height="4" fill="white" rx="1"/><path d="M10 10L8 12L10 14" stroke="#60A5FA" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 10L24 12L22 14" stroke="#60A5FA" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="text-xl font-bold text-blue-700">CodeCraftMD</span>
+        </a>
+      </div>
+      <nav class="flex items-center space-x-4">
+        <a href="../index.html" class="text-sm font-medium text-gray-600 hover:text-blue-600 transition">← Knowledge Hub</a>
+        <a href="/dashboard.html" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm font-medium transition">Try Platform</a>
+      </nav>
+    </div>
+  </header>
+
+  <nav class="bg-white border-b">
+    <div class="max-w-4xl mx-auto px-6 py-2">
+      <ol class="flex items-center space-x-2 text-sm text-gray-500">
+        <li><a href="/" class="hover:text-blue-600">Home</a></li>
+        <li><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg></li>
+        <li><a href="../index.html" class="hover:text-blue-600">Knowledge Hub</a></li>
+        <li><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg></li>
+        <li class="text-gray-900 font-medium">CPT vs ICD-10</li>
+      </ol>
+    </div>
+  </nav>
+
+  <article class="max-w-4xl mx-auto px-6 py-12">
+    <header class="mb-12">
+      <div class="text-center mb-8">
+        <div class="flex items-center justify-center space-x-4 mb-4">
+          <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">CPT Codes</span>
+          <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">Educational</span>
+        </div>
+        <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">
+          CPT vs ICD-10 Codes: Understanding the Difference
+        </h1>
+        <p class="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+          Learn how CPT procedure codes and ICD-10 diagnosis codes work together in medical billing and why both are essential.
+        </p>
+      </div>
+      
+      <div class="flex items-center justify-between border-t border-b border-gray-200 py-6">
+        <div class="flex items-center space-x-4">
+          <img src="../images/dr-chukwuma-onyeije.jpg" alt="Dr. Chukwuma Onyeije" class="w-12 h-12 rounded-full">
+          <div>
+            <h3 class="font-semibold text-gray-900">Dr. Chukwuma Onyeije</h3>
+            <p class="text-sm text-gray-500">Founder, CodeCraftMD</p>
+          </div>
+        </div>
+        <div class="text-right">
+          <p class="text-sm text-gray-600">October 8, 2024</p>
+          <p class="text-sm text-gray-500">6 min read</p>
+        </div>
+      </div>
+    </header>
+
+    <div class="table-of-contents p-6 rounded-lg mb-12">
+      <h3 class="font-semibold text-gray-900 mb-4">Table of Contents</h3>
+      <ul class="space-y-2 text-sm">
+        <li><a href="#overview" class="text-blue-600 hover:text-blue-800">1. Fundamental Difference</a></li>
+        <li><a href="#cpt" class="text-blue-600 hover:text-blue-800">2. CPT Codes Explained</a></li>
+        <li><a href="#icd10" class="text-blue-600 hover:text-blue-800">3. ICD-10 Codes Explained</a></li>
+        <li><a href="#comparison" class="text-blue-600 hover:text-blue-800">4. Side-by-Side Comparison</a></li>
+        <li><a href="#examples" class="text-blue-600 hover:text-blue-800">5. Real-World Examples</a></li>
+        <li><a href="#together" class="text-blue-600 hover:text-blue-800">6. How They Work Together</a></li>
+      </ul>
+    </div>
+
+    <div class="prose prose-lg max-w-none">
+      <section id="overview" class="mb-12">
+        <h2 class="text-3xl font-bold text-gray-900 mb-6">The Fundamental Difference</h2>
+        
+        <div class="grid md:grid-cols-2 gap-6 mb-8">
+          <div class="bg-blue-50 p-6 rounded-xl border">
+            <h3 class="font-semibold text-gray-900 mb-2">CPT Codes</h3>
+            <p class="text-gray-700"><span class="font-semibold">Answer:</span> "What procedure was performed?"</p>
+            <p class="text-gray-600 text-sm mt-2">Identify the treatment, service, or procedure</p>
+          </div>
+          <div class="bg-green-50 p-6 rounded-xl border">
+            <h3 class="font-semibold text-gray-900 mb-2">ICD-10 Codes</h3>
+            <p class="text-gray-700"><span class="font-semibold">Answer:</span> "Why was the procedure performed?"</p>
+            <p class="text-gray-600 text-sm mt-2">Identify the diagnosis or reason for the service</p>
+          </div>
+        </div>
+
+        <p class="text-lg text-gray-700 leading-relaxed">
+          Both code types are required for every medical claim. CPT codes justify what you charged for, while ICD-10 codes justify why the procedure was medically necessary. Insurance companies use both to determine payment and verify medical necessity.
+        </p>
+      </section>
+
+      <section id="cpt" class="mb-12">
+        <h2 class="text-3xl font-bold text-gray-900 mb-6">CPT Codes: What Was Done?</h2>
+        
+        <p class="text-lg text-gray-700 leading-relaxed mb-6">
+          Current Procedural Terminology (CPT) codes are numeric and descriptive codes maintained by the American Medical Association. They describe the specific procedures, services, and treatments provided to patients.
+        </p>
+
+        <div class="bg-white p-6 rounded-xl shadow-sm border mb-6">
+          <h3 class="font-semibold text-gray-900 mb-4">CPT Code Structure:</h3>
+          <ul class="space-y-3 text-gray-700">
+            <li class="flex items-start">
+              <span class="text-blue-600 mr-3 font-bold">•</span>
+              <span><span class="font-semibold">Format:</span> 5-digit numeric codes (e.g., 99213, 70450)</span>
+            </li>
+            <li class="flex items-start">
+              <span class="text-blue-600 mr-3 font-bold">•</span>
+              <span><span class="font-semibold">Range:</span> 10001 to 99607</span>
+            </li>
+            <li class="flex items-start">
+              <span class="text-blue-600 mr-3 font-bold">•</span>
+              <span><span class="font-semibold">Updated:</span> Annually on January 1st</span>
+            </li>
+            <li class="flex items-start">
+              <span class="text-blue-600 mr-3 font-bold">•</span>
+              <span><span class="font-semibold">Use:</span> Billing and reimbursement</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="bg-blue-50 p-6 rounded-xl border">
+          <h3 class="font-semibold text-gray-900 mb-3">Common CPT Code Categories:</h3>
+          <div class="grid md:grid-cols-2 gap-4 text-sm text-gray-700">
+            <div>
+              <p class="font-semibold mb-1">Evaluation & Management (E/M)</p>
+              <p>Office visits, consultations, emergency room visits</p>
+            </div>
+            <div>
+              <p class="font-semibold mb-1">Surgery</p>
+              <p>Operative procedures, repairs, removals</p>
+            </div>
+            <div>
+              <p class="font-semibold mb-1">Pathology & Laboratory</p>
+              <p>Blood tests, tissue analysis, diagnostic tests</p>
+            </div>
+            <div>
+              <p class="font-semibold mb-1">Radiology</p>
+              <p>X-rays, ultrasounds, MRIs, CT scans</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="icd10" class="mb-12">
+        <h2 class="text-3xl font-bold text-gray-900 mb-6">ICD-10 Codes: Why Was It Done?</h2>
+        
+        <p class="text-lg text-gray-700 leading-relaxed mb-6">
+          International Classification of Diseases, 10th Revision (ICD-10) codes identify diagnoses, symptoms, diseases, injuries, and conditions that justify the medical procedures performed.
+        </p>
+
+        <div class="bg-white p-6 rounded-xl shadow-sm border mb-6">
+          <h3 class="font-semibold text-gray-900 mb-4">ICD-10 Code Structure:</h3>
+          <ul class="space-y-3 text-gray-700">
+            <li class="flex items-start">
+              <span class="text-green-600 mr-3 font-bold">•</span>
+              <span><span class="font-semibold">Format:</span> Alphanumeric (letter + 2 digits + decimal + 1-2 digits, e.g., E11.9, M79.3)</span>
+            </li>
+            <li class="flex items-start">
+              <span class="text-green-600 mr-3 font-bold">•</span>
+              <span><span class="font-semibold">Total codes:</span> Over 70,000 specific diagnosis codes</span>
+            </li>
+            <li class="flex items-start">
+              <span class="text-green-600 mr-3 font-bold">•</span>
+              <span><span class="font-semibold">Updated:</span> Annually on October 1st</span>
+            </li>
+            <li class="flex items-start">
+              <span class="text-green-600 mr-3 font-bold">•</span>
+              <span><span class="font-semibold">Use:</span> Clinical documentation and medical necessity</span>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="comparison" class="mb-12">
+        <h2 class="text-3xl font-bold text-gray-900 mb-6">Side-by-Side Comparison</h2>
+        
+        <div class="overflow-x-auto">
+          <table class="comparison-table w-full text-sm">
+            <thead class="bg-gray-100">
+              <tr>
+                <td class="font-bold bg-blue-100">CPT Codes</td>
+                <td class="font-bold bg-green-100">ICD-10 Codes</td>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Purpose:</strong> Describe procedure/service</td>
+                <td><strong>Purpose:</strong> Describe diagnosis/condition</td>
+              </tr>
+              <tr>
+                <td><strong>Example:</strong> 99213 (Office visit)</td>
+                <td><strong>Example:</strong> E11.9 (Type 2 diabetes)</td>
+              </tr>
+              <tr>
+                <td><strong>Format:</strong> 5 digits, numeric</td>
+                <td><strong>Format:</strong> Alphanumeric with decimals</td>
+              </tr>
+              <tr>
+                <td><strong>Quantity:</strong> ~10,000 codes</td>
+                <td><strong>Quantity:</strong> ~70,000 codes</td>
+              </tr>
+              <tr>
+                <td><strong>Maintained by:</strong> American Medical Association (AMA)</td>
+                <td><strong>Maintained by:</strong> World Health Organization (WHO)</td>
+              </tr>
+              <tr>
+                <td><strong>Updated:</strong> January 1 annually</td>
+                <td><strong>Updated:</strong> October 1 annually</td>
+              </tr>
+              <tr>
+                <td><strong>Determines:</strong> Amount to bill</td>
+                <td><strong>Determines:</strong> Medical necessity</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="examples" class="mb-12">
+        <h2 class="text-3xl font-bold text-gray-900 mb-6">Real-World Examples</h2>
+        
+        <div class="space-y-6">
+          <div class="bg-white p-6 rounded-xl shadow-sm border">
+            <h3 class="font-semibold text-gray-900 mb-3">Example 1: Office Visit for Hypertension</h3>
+            <div class="grid md:grid-cols-2 gap-4">
+              <div class="bg-blue-50 p-3 rounded">
+                <p class="text-sm font-semibold text-blue-900">CPT: 99213</p>
+                <p class="text-xs text-gray-700">Established patient office visit (15 min)</p>
+              </div>
+              <div class="bg-green-50 p-3 rounded">
+                <p class="text-sm font-semibold text-green-900">ICD-10: I10</p>
+                <p class="text-xs text-gray-700">Essential hypertension</p>
+              </div>
+            </div>
+            <p class="text-sm text-gray-700 mt-3"><span class="font-semibold">Meaning:</span> The provider spent 15 minutes with an established patient for a hypertension check-up</p>
+          </div>
+
+          <div class="bg-white p-6 rounded-xl shadow-sm border">
+            <h3 class="font-semibold text-gray-900 mb-3">Example 2: Knee X-Ray</h3>
+            <div class="grid md:grid-cols-2 gap-4">
+              <div class="bg-blue-50 p-3 rounded">
+                <p class="text-sm font-semibold text-blue-900">CPT: 71020</p>
+                <p class="text-xs text-gray-700">Chest X-ray, 2 views</p>
+              </div>
+              <div class="bg-green-50 p-3 rounded">
+                <p class="text-sm font-semibold text-green-900">ICD-10: R06.02</p>
+                <p class="text-xs text-gray-700">Shortness of breath, exertional</p>
+              </div>
+            </div>
+            <p class="text-sm text-gray-700 mt-3"><span class="font-semibold">Meaning:</span> Took 2 views of the chest because patient had shortness of breath during exercise</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="together" class="mb-12">
+        <h2 class="text-3xl font-bold text-gray-900 mb-6">How They Work Together</h2>
+        
+        <p class="text-lg text-gray-700 leading-relaxed mb-6">
+          A complete medical claim requires both codes working together. Insurance companies validate medical necessity by matching the diagnosis to the procedure.
+        </p>
+
+        <div class="bg-gradient-to-r from-blue-50 to-green-50 p-6 rounded-xl border">
+          <h3 class="font-semibold text-gray-900 mb-4">The Complete Claim Equation:</h3>
+          <div class="flex items-center justify-between text-center">
+            <div>
+              <p class="font-semibold text-blue-900">CPT Code</p>
+              <p class="text-sm text-gray-700">"What was done"</p>
+            </div>
+            <div class="text-2xl text-green-600 font-bold">+</div>
+            <div>
+              <p class="font-semibold text-green-900">ICD-10 Code</p>
+              <p class="text-sm text-gray-700">"Why it was done"</p>
+            </div>
+            <div class="text-2xl text-blue-600 font-bold">=</div>
+            <div>
+              <p class="font-semibold text-purple-900">Valid Claim</p>
+              <p class="text-sm text-gray-700">Reimbursement</p>
+            </div>
+          </div>
+        </div>
+
+        <p class="text-lg text-gray-700 leading-relaxed mt-8">
+          Without proper ICD-10 coding, even the correct CPT code will be denied because the insurance company won't understand why the procedure was medically necessary. Similarly, without the correct CPT code, you can't bill for the service at all.
+        </p>
+      </section>
+    </div>
+
+    <nav class="border-t border-gray-200 pt-8">
+      <div class="flex justify-between items-center">
+        <a href="../index.html" class="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium">
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+          Back to Knowledge Hub
+        </a>
+      </div>
+    </nav>
+  </article>
+
+  <script>
+    window.addEventListener('scroll', function() {
+      const scrolled = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+      document.getElementById('reading-progress').style.width = scrolled + '%';
+    });
+  </script>
+</body>
+</html>
